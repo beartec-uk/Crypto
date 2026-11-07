@@ -9,6 +9,8 @@ import { calculateEMABias } from '@/utils/emaBias';
 import { detectStructure } from '@/utils/structureDetection';
 import { BiasBadge } from '@/components/BiasBadge';
 import { convertTimeframe } from '@/lib/utils/binance';
+import { formatTickerDisplay } from '@/lib/chart/priceUtils';
+import { falconSafeTimeframe, isFalconTicker } from '@/lib/tickerUtils';
 import type { Bias } from '@/types/candle';
 
 interface TickerData {
@@ -17,6 +19,68 @@ interface TickerData {
   priceChange: number;
   emaBias: Bias;
   structureBias: Bias;
+}
+
+
+function candleTimeSec(time: number): number {
+  return time > 1e12 ? time / 1000 : time;
+}
+
+function parseFalconWatchlistCandles(raw: any[]) {
+  return raw.map((c) => ({
+    time: Number(c.time),
+    open: Number(c.open),
+    high: Number(c.high),
+    low: Number(c.low),
+    close: Number(c.close),
+    volume: Number(c.volume ?? 0),
+  })).filter((c) => Number.isFinite(c.close));
+}
+
+function falconChangePercent(parsed: Array<{ time: number; close: number }>): number {
+  if (parsed.length < 2) return 0;
+  const last = parsed[parsed.length - 1];
+  const cutoff = candleTimeSec(last.time) - 24 * 3600;
+  let ref = parsed[0];
+  for (const candle of parsed) {
+    if (candleTimeSec(candle.time) <= cutoff) ref = candle;
+    else break;
+  }
+  if (!ref.close) return 0;
+  return ((last.close - ref.close) / ref.close) * 100;
+}
+
+async function fetchFalconWatchlistRow(
+  ticker: string,
+  timeframe: string,
+  structurePivotLength?: number,
+): Promise<TickerData> {
+  const tf = falconSafeTimeframe(timeframe);
+  const candleResponse = await fetch(
+    `/api/crypto/falcon/candles?pair=${encodeURIComponent(ticker)}&timeframe=${encodeURIComponent(tf)}&limit=1000`,
+  );
+  if (!candleResponse.ok) {
+    throw new Error(`Falcon candles ${candleResponse.status}`);
+  }
+  const payload = await candleResponse.json();
+  const parsed = parseFalconWatchlistCandles(Array.isArray(payload.candles) ? payload.candles : []);
+  if (parsed.length === 0) {
+    return {
+      symbol: ticker,
+      price: 0,
+      priceChange: 0,
+      emaBias: 'neutral',
+      structureBias: 'neutral',
+    };
+  }
+  const last = parsed[parsed.length - 1];
+  return {
+    symbol: ticker,
+    price: last.close,
+    priceChange: falconChangePercent(parsed),
+    emaBias: calculateEMABias(parsed),
+    structureBias: detectStructure(parsed, structurePivotLength || 5),
+  };
 }
 
 interface TickerTableProps {
@@ -65,15 +129,41 @@ export function TickerTable({
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch 24hr ticker data for prices
-        const priceResponse = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-        const priceData = await priceResponse.json();
+        // Binance 24hr stats — optional so Falcon-only rows still load if this fails
+        let priceData: any[] = [];
+        try {
+          const priceResponse = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+          const parsed = await priceResponse.json();
+          if (Array.isArray(parsed)) priceData = parsed;
+        } catch (err) {
+          console.error('Failed to fetch Binance 24hr tickers:', err);
+        }
 
         const newTickerData: Record<string, TickerData> = {};
         const binanceTimeframe = convertTimeframe(timeframe);
 
         // Fetch candle data for each ticker
         for (const ticker of tickers) {
+          if (isFalconTicker(ticker)) {
+            try {
+              newTickerData[ticker] = await fetchFalconWatchlistRow(
+                ticker,
+                timeframe,
+                structurePivotLength,
+              );
+            } catch (err) {
+              console.error(`Failed to fetch Falcon data for ${ticker}:`, err);
+              newTickerData[ticker] = {
+                symbol: ticker,
+                price: 0,
+                priceChange: 0,
+                emaBias: 'neutral',
+                structureBias: 'neutral',
+              };
+            }
+            continue;
+          }
+
           const tickerInfo = priceData.find((t: any) => t.symbol === ticker);
           
           if (tickerInfo) {
@@ -171,6 +261,13 @@ export function TickerTable({
     return <span className={color}>{sign}{change.toFixed(2)}%</span>;
   };
 
+  const formatWatchlistPrice = (ticker: string, data?: TickerData) => {
+    if (!data) return '-';
+    const formatted = formatPrice(data.price);
+    if (formatted === '-') return '-';
+    return isFalconTicker(ticker) ? `${formatted} FPL` : `$${formatted}`;
+  };
+
   return (
     <div className="w-full space-y-3">
       {/* Header with timeframe selector and settings button */}
@@ -253,14 +350,14 @@ export function TickerTable({
                     }}
                     tabIndex={0}
                     aria-current={isSelected ? 'true' : undefined}
-                    aria-label={`Select ${ticker.replace('USDT', '/USDT')} to load its chart and indicators`}
+                    aria-label={`Select ${formatTickerDisplay(ticker)} to load its chart and indicators`}
                     data-selected={isSelected ? 'true' : undefined}
                   >
                     <td className={`px-1 sm:px-2 py-3 font-medium text-xs sm:text-sm w-[120px] ${isSelected ? 'text-sky-300' : 'text-white'}`}>
-                      {ticker.replace('USDT', '/USDT')}
+                      {formatTickerDisplay(ticker)}
                     </td>
                     <td className="px-1 sm:px-2 py-3 text-right font-mono text-gray-300 text-xs sm:text-sm w-[100px]">
-                      ${data ? formatPrice(data.price) : '-'}
+                      {formatWatchlistPrice(ticker, data)}
                     </td>
                     <td className="px-1 sm:px-2 py-3 text-right font-mono text-xs sm:text-sm w-[80px]">
                       {data ? formatChange(data.priceChange) : '-'}

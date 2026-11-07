@@ -7,6 +7,7 @@ import { ChartPreview } from '@/components/ChartPreview';
 import { useWatchlistState } from '@/hooks/useWatchlistState';
 import { useWatchlistBiasSettings } from '@/hooks/useWatchlistBiasSettings';
 import { WatchlistSettingsPanel } from '@/components/watchlist/WatchlistSettingsPanel';
+import { falconSafeTimeframe, isFalconTicker } from '@/lib/tickerUtils';
 
 interface CleanWatchlistProps {
   onExpandChart?: (context: {
@@ -102,13 +103,17 @@ export function CleanWatchlist({ onExpandChart, onSelectionChange, onWatchlistBi
     setShowSettings(false);
   }, []);
 
+  const chartTimeframe = isFalconTicker(selectedSymbol)
+    ? falconSafeTimeframe(tableTimeframe)
+    : tableTimeframe;
+
   const handleExpandChart = useCallback(() => {
     onExpandChart?.({
       symbol: selectedSymbol,
-      timeframe: tableTimeframe,
+      timeframe: chartTimeframe,
       watchlist: watchlist.watchlistTickers
     });
-  }, [selectedSymbol, tableTimeframe, watchlist.watchlistTickers, onExpandChart]);
+  }, [selectedSymbol, chartTimeframe, watchlist.watchlistTickers, onExpandChart]);
 
   useEffect(() => {
     onSelectionChange?.({
@@ -147,7 +152,7 @@ export function CleanWatchlist({ onExpandChart, onSelectionChange, onWatchlistBi
         <div className="mt-4">
           <ChartPreview
             symbol={selectedSymbol}
-            timeframe={tableTimeframe}
+            timeframe={chartTimeframe}
             onExpand={handleExpandChart}
             chartContainerRef={chartContainerRef}
           />
