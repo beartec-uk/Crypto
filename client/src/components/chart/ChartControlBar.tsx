@@ -1,5 +1,6 @@
 // Copyright (c) 2025-2026 BEARTEC (Scott Reynolds). All rights reserved.
 import { Button } from '@/components/ui/button';
+import { FALCON_CANDLE_TIMEFRAMES, isFalconTicker } from '@/lib/tickerUtils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RefreshCw, Maximize2, Minimize2, ArrowRight } from 'lucide-react';
 
@@ -66,7 +67,10 @@ export function ChartControlBar({
 
       {/* Interval Buttons */}
       <div className="flex gap-1 bg-slate-800 rounded p-1">
-        {INTERVALS.map(({ value, label }) => (
+        {(isFalconTicker(symbol)
+          ? INTERVALS.filter(({ value }) => (FALCON_CANDLE_TIMEFRAMES as readonly string[]).includes(value))
+          : INTERVALS
+        ).map(({ value, label }) => (
           <button
             key={value}
             onClick={() => onIntervalChange(value)}

@@ -1,5 +1,6 @@
 // Copyright (c) 2025-2026 BEARTEC (Scott Reynolds). All rights reserved.
 import { useMemo } from 'react';
+import { isFalconTicker } from '@/lib/tickerUtils';
 import { useCandleData } from './useCandleData';
 import { generateMockCVDData } from '@/utils/mockCVDData';
 import { useGDSMarketMetrics } from '@/hooks/indicators/useGDSMarketMetrics';
@@ -17,6 +18,9 @@ interface UseIndicatorsDataReturn {
   externalMetrics: GDSExternalMetrics;
   isLoading: boolean;
   error: Error | null;
+  candlesLoading: boolean;
+  candlesError: Error | null;
+  falconMeta: ReturnType<typeof useCandleData>['falconMeta'];
 }
 
 export function useIndicatorsData({
@@ -25,7 +29,7 @@ export function useIndicatorsData({
 }: UseIndicatorsDataOptions): UseIndicatorsDataReturn {
   const hasSymbol = Boolean(symbol && symbol.trim());
 
-  const { candles, isLoading, error } = useCandleData({
+  const { candles, isLoading, error, falconMeta } = useCandleData({
     symbol,
     timeframe,
     enabled: hasSymbol,
@@ -40,7 +44,7 @@ export function useIndicatorsData({
   } = useGDSMarketMetrics({
     symbol,
     timeframe,
-    enabled: hasSymbol,
+    enabled: hasSymbol && !isFalconTicker(symbol),
   });
 
   // Generate mock CVD data when candles update
@@ -57,5 +61,8 @@ export function useIndicatorsData({
     externalMetrics,
     isLoading: isLoading || isMetricsLoading,
     error: error || metricsError,
+    candlesLoading: isLoading,
+    candlesError: error,
+    falconMeta,
   };
 }

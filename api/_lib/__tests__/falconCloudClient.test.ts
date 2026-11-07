@@ -14,6 +14,7 @@ import {
 afterEach(() => {
   clearFalconCloudCache();
   vi.unstubAllGlobals();
+  vi.useRealTimers();
 });
 
 describe('falconCloud helpers', () => {
@@ -163,5 +164,167 @@ describe('FalconCloudClient rpc', () => {
     await expect(client.rpc('fpl_orderBook', { pair: 'X' })).rejects.toMatchObject({
       code: -32602,
     });
+  });
+});
+
+describe('falconCloud branch coverage', () => {
+  it('summarizeStatus falls back to height and nulls', () => {
+    expect(summarizeStatus({ height: 42 }).tip_height).toBe(42);
+    expect(summarizeStatus({}).tip_height).toBeNull();
+    expect(summarizeStatus({ best_peer_tip: 'x' } as any).best_peer_tip).toBeNull();
+  });
+
+  it('sanitizeUsage omits non-string key_id and non-numbers', () => {
+    const u = sanitizeUsage({ tier: 1, key_id: 9, units_used: 'n' } as any);
+    expect(u.tier).toBeUndefined();
+    expect(u.key_id).toBeUndefined();
+    expect(u.units_used).toBeUndefined();
+  });
+
+  it('normalizePair defaults empty and leaves *-FPL', () => {
+    expect(normalizePair('')).toBe('BTC4-FPL');
+    expect(normalizePair('eth-fpl')).toBe('ETH-FPL');
+  });
+
+  it('clampLevels falls back and floors', () => {
+    expect(clampLevels(undefined)).toBe(50);
+    expect(clampLevels(3.9)).toBe(3);
+  });
+
+  it('rejects array params', async () => {
+    const client = new FalconCloudClient({
+      env: { FALCON_CLOUD_API_KEY: 'k' } as any,
+      fetchImpl: vi.fn() as any,
+    });
+    await expect(client.rpc('fpl_status', [] as any)).rejects.toMatchObject({ code: -32602 });
+  });
+
+  it('handles 401 / non-ok HTTP / 429 then success', async () => {
+    const fetch401 = vi.fn(async () => new Response('nope', { status: 401 }));
+    const c401 = new FalconCloudClient({
+      env: { FALCON_CLOUD_API_KEY: 'k' } as any,
+      fetchImpl: fetch401 as any,
+      cacheTtlMs: 0,
+    });
+    await expect(c401.rpc('fpl_status', {})).rejects.toMatchObject({ status: 401 });
+
+    const fetch500 = vi.fn(async () => new Response('err', { status: 500 }));
+    const c500 = new FalconCloudClient({
+      env: { FALCON_CLOUD_API_KEY: 'k' } as any,
+      fetchImpl: fetch500 as any,
+      cacheTtlMs: 0,
+    });
+    await expect(c500.rpc('fpl_status', {})).rejects.toMatchObject({ status: 500 });
+
+    let n = 0;
+    const fetch429 = vi.fn(async () => {
+      n += 1;
+      if (n < 2) {
+        return new Response('slow', { status: 429, headers: { 'retry-after': '0' } });
+      }
+      return new Response(JSON.stringify({ jsonrpc: '2.0', id: 1, result: { ok: true } }), {
+        status: 200,
+      });
+    });
+    const c429 = new FalconCloudClient({
+      env: { FALCON_CLOUD_API_KEY: 'k' } as any,
+      fetchImpl: fetch429 as any,
+      cacheTtlMs: 0,
+    });
+    // sleep uses real timers; stub sleep path by making retry-after 0 and expecting success after retry
+    const result = await c429.rpc<{ ok: boolean }>('fpl_status', {});
+    expect(result.ok).toBe(true);
+    expect(fetch429).toHaveBeenCalledTimes(2);
+  });
+
+  it('getUsage covers 401, http error, success + cache', async () => {
+    const fetch401 = vi.fn(async () => new Response('', { status: 401 }));
+    await expect(
+      new FalconCloudClient({
+        env: { FALCON_CLOUD_API_KEY: 'k' } as any,
+        fetchImpl: fetch401 as any,
+        cacheTtlMs: 0,
+      }).getUsage(),
+    ).rejects.toMatchObject({ status: 401 });
+
+    const fetch500 = vi.fn(async () => new Response('', { status: 503 }));
+    await expect(
+      new FalconCloudClient({
+        env: { FALCON_CLOUD_API_KEY: 'k' } as any,
+        fetchImpl: fetch500 as any,
+        cacheTtlMs: 0,
+      }).getUsage(),
+    ).rejects.toMatchObject({ status: 503 });
+
+    const fetchOk = vi.fn(async () =>
+      new Response(JSON.stringify({ tier: 'free', units_used: 1, key_id: 'secret' }), {
+        status: 200,
+      }),
+    );
+    const client = new FalconCloudClient({
+      env: { FALCON_CLOUD_API_KEY: 'k' } as any,
+      fetchImpl: fetchOk as any,
+      cacheTtlMs: 60_000,
+    });
+    const a = await client.getUsage();
+    const b = await client.getUsage();
+    expect(a.tier).toBe('free');
+    expect(a.key_id).toBe('<present>');
+    expect(b.tier).toBe('free');
+    expect(fetchOk).toHaveBeenCalledTimes(1);
+  });
+
+  it('getFills without pair/account and empty fills array', async () => {
+    const fetchImpl = vi.fn(async () =>
+      new Response(JSON.stringify({ jsonrpc: '2.0', id: 1, result: {} }), { status: 200 }),
+    );
+    const client = new FalconCloudClient({
+      env: { FALCON_CLOUD_API_KEY: 'k' } as any,
+      fetchImpl: fetchImpl as any,
+      cacheTtlMs: 0,
+    });
+    const r = await client.getFills({});
+    expect(r.fills).toEqual([]);
+  });
+
+  it('getOrderBook omits levels when undefined; getFalconCloudClient singleton', async () => {
+    const fetchImpl = vi.fn(async (_u: string, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body));
+      expect(body.params.levels).toBeUndefined();
+      return new Response(
+        JSON.stringify({ jsonrpc: '2.0', id: 1, result: { pair: 'BTC4-FPL', bids: [], asks: [] } }),
+        { status: 200 },
+      );
+    });
+    const client = new FalconCloudClient({
+      env: { FALCON_CLOUD_API_KEY: 'k' } as any,
+      fetchImpl: fetchImpl as any,
+      cacheTtlMs: 0,
+    });
+    await client.getOrderBook('BTC4');
+    const { getFalconCloudClient } = await import('../falconCloudClient');
+    const s1 = getFalconCloudClient();
+    const s2 = getFalconCloudClient();
+    expect(s1).toBe(s2);
+  });
+
+  it('expires cache entries', async () => {
+    vi.useFakeTimers();
+    const fetchImpl = vi.fn(async () =>
+      new Response(JSON.stringify({ jsonrpc: '2.0', id: 1, result: { fills: [] } }), {
+        status: 200,
+      }),
+    );
+    const client = new FalconCloudClient({
+      env: { FALCON_CLOUD_API_KEY: 'k' } as any,
+      fetchImpl: fetchImpl as any,
+      cacheTtlMs: 1000,
+    });
+    await client.getFills({ pair: 'USDC', limit: 1 });
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(1500);
+    await client.getFills({ pair: 'USDC', limit: 1 });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
   });
 });

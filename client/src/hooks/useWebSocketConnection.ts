@@ -1,6 +1,7 @@
 // Copyright (c) 2025-2026 BEARTEC (Scott Reynolds). All rights reserved.
 import { useEffect, useRef } from 'react';
 import type { CandleData } from '@/types/chart.types';
+import { isFalconTicker } from '@/lib/tickerUtils';
 
 interface UseWebSocketConnectionOptions {
   symbol: string;
@@ -23,6 +24,7 @@ export function useWebSocketConnection({
 
   useEffect(() => {
     if (!enabled || !symbol || !interval || candlesLength === 0) return;
+    if (isFalconTicker(symbol)) return;
 
     // Use global Binance endpoint (works worldwide, not just USA)
     const ws = new WebSocket('wss://stream.binance.com:9443/ws');

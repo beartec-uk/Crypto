@@ -11,6 +11,7 @@ Group=falcon-fills
 WorkingDirectory=/var/lib/falcon-fills-store
 EnvironmentFile=-/etc/falcon-fills-store/env
 ExecStart=/usr/bin/python3 /usr/local/lib/falcon-fills-store/collector.py --db /var/lib/falcon-fills-store/fills.sqlite
+ExecStartPost=-/usr/bin/python3 /usr/local/lib/falcon-fills-store/sync_candles.py
 Nice=10
 IOSchedulingClass=best-effort
 IOSchedulingPriority=7

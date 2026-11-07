@@ -2897,6 +2897,19 @@ const requireCryptoAuth: RequestHandler = async (req: Request, res: Response, ne
     const handler = (await import("../api/crypto/falcon/orderbook")).default;
     await handler(req as any, res as any);
   });
+  app.get("/api/crypto/falcon/markets", async (req, res) => {
+    const handler = (await import("../api/crypto/falcon/markets")).default;
+    await handler(req as any, res as any);
+  });
+  app.get("/api/crypto/falcon/candles", async (req, res) => {
+    const handler = (await import("../api/crypto/falcon/candles")).default;
+    await handler(req as any, res as any);
+  });
+  app.post("/api/crypto/falcon/ingest", async (req, res) => {
+    const handler = (await import("../api/crypto/falcon/ingest")).default;
+    await handler(req as any, res as any);
+  });
+
   app.get("/api/crypto/falcon/fills", async (req, res) => {
     const handler = (await import("../api/crypto/falcon/fills")).default;
     await handler(req as any, res as any);

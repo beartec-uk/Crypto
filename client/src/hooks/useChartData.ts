@@ -3,6 +3,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { CandleData } from '@/types/chart.types';
 import type { FootprintData } from '@/types/smc.types';
+import { isFalconTicker } from '@/lib/tickerUtils';
 
 interface UseChartDataOptions {
   symbol: string;
@@ -40,6 +41,34 @@ export function useChartData({ symbol, interval, useMultiExchange }: UseChartDat
     
     try {
       setLoading(true);
+
+      // Falcon PL testnet — do not hit Binance for these symbols.
+      if (isFalconTicker(symbol)) {
+        const tf = interval;
+        const resp = await fetch(
+          `/api/crypto/falcon/candles?pair=${encodeURIComponent(symbol)}&timeframe=${encodeURIComponent(tf)}&limit=1000`,
+          { signal: abortController.signal },
+        );
+        if (!resp.ok) throw new Error(`Failed to fetch Falcon candles: ${resp.statusText}`);
+        const payload = await resp.json();
+        if (currentGeneration !== fetchGenerationRef.current) return;
+        const list = Array.isArray(payload.candles) ? payload.candles : [];
+        const mapped: CandleData[] = list.map((c: any) => ({
+          time: Number(c.time),
+          open: Number(c.open),
+          high: Number(c.high),
+          low: Number(c.low),
+          close: Number(c.close),
+          volume: Number(c.volume ?? 0),
+        }));
+        setCandles(mapped);
+        setFootprintData([]);
+        setRealDeltaData(new Map());
+        setDeltaHistory([]);
+        setCumDelta(0);
+        setLoading(false);
+        return;
+      }
       
       // Fetch first batch (most recent 1000 candles)
       const url1 = `/api/binance/klines?symbol=${symbol}&interval=${interval}&limit=1000`;
@@ -200,6 +229,33 @@ export function useChartData({ symbol, interval, useMultiExchange }: UseChartDat
   useEffect(() => {
     fetchInitialData();
   }, [fetchInitialData]);
+
+  useEffect(() => {
+    if (!isFalconTicker(symbol)) return undefined;
+    const id = window.setInterval(() => {
+      void (async () => {
+        try {
+          const resp = await fetch(
+            `/api/crypto/falcon/candles?pair=${encodeURIComponent(symbol)}&timeframe=${encodeURIComponent(interval)}&limit=1000`,
+          );
+          if (!resp.ok) return;
+          const payload = await resp.json();
+          const list = Array.isArray(payload.candles) ? payload.candles : [];
+          setCandles(list.map((c: any) => ({
+            time: Number(c.time),
+            open: Number(c.open),
+            high: Number(c.high),
+            low: Number(c.low),
+            close: Number(c.close),
+            volume: Number(c.volume ?? 0),
+          })));
+        } catch {
+          /* keep the last Falcon bars */
+        }
+      })();
+    }, 10000);
+    return () => window.clearInterval(id);
+  }, [symbol, interval]);
 
   return {
     candles,

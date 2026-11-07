@@ -31,7 +31,7 @@ Fill object fields observed:
 | Binance klines in `api/crypto/data.ts` | **Unchanged** — still Binance; not Falcon |
 | `server/lib/indicators.ts` Candle OHLCV | Still expects stored/fetched candles; no Falcon adapter wired |
 | Falcon order book UI | Not built in this PR (backend feed only) |
-| Falcon fill → candle aggregation | **Not done** — needs ingest + DB (e.g. extend `cached_candles`) + timeframe bucketing |
+| Falcon fill → candle aggregation | **Not a verified UTC chart.** Draft #618 stores coverage labels; it does not publish UTC buckets. See `docs/FALCON_CANDLES_TICKER.md`. |
 | Artificial volume / Binance masquerading as Falcon | **Explicitly refused** |
 
 Safe next steps after merge: poll `fpl_fills` + `fpl_orderBook` into storage, derive OHLCV only from real fills/AMM prints, then optionally add a Falcon source switch in chart APIs without renaming Binance data.
@@ -55,7 +55,7 @@ Collector sources live under `tools/falcon-fills-store/` (deployed to brain; not
 | User | `falcon-fills` (nologin, least privilege) |
 | Pairs | allowlisted `BTC4`, `USDC` |
 | Dedup | natural Fill key incl. `ifnull(taker_order/maker_order,-1)` |
-| Block time | **NULL** until validated height→time source (candle follow-up) |
+| Block time | **NULL.** Physics ms and observer arrival are not UTC. Verified UTC candles are not enabled. |
 | BearTec HTTP read | **Pending** — no public/Funnel port opened |
 
 Quota estimate ≈ 2 fills RPC/min + status every 10 cycles ≈ **~90k units/month** (Free 300k).

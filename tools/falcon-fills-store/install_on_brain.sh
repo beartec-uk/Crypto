@@ -9,6 +9,8 @@ install -d -o root -g falcon-fills -m 750 /etc/falcon-fills-store
 install -d -o root -g root -m 755 /usr/local/lib/falcon-fills-store
 install -d -o root -g root -m 755 /usr/local/share/falcon-fills-store
 install -m 755 "$SRC/collector.py" /usr/local/lib/falcon-fills-store/collector.py
+install -m 755 "$SRC/sync_candles.py" /usr/local/lib/falcon-fills-store/sync_candles.py
+install -m 644 "$SRC/candle_lib.py" /usr/local/lib/falcon-fills-store/candle_lib.py
 install -m 755 "$SRC/backup.sh" /usr/local/lib/falcon-fills-store/backup.sh
 install -m 644 "$SRC/README.md" /usr/local/share/falcon-fills-store/README.md
 install -m 644 "$SRC/systemd/falcon-fills-store.service" /etc/systemd/system/falcon-fills-store.service

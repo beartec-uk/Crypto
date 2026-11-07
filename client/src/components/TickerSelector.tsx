@@ -15,7 +15,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { getFavorites, toggleFavorite, isFavorite, type Ticker } from '@/lib/tickerUtils';
+import { getFavorites, toggleFavorite, isFavorite, FALCON_TICKERS, isFalconTicker, type Ticker } from '@/lib/tickerUtils';
 
 interface TickerSelectorProps {
   value: string;
@@ -43,11 +43,14 @@ export function TickerSelector({ value, onChange, showSearch = true }: TickerSel
     setIsLoading(true);
     try {
       const response = await fetch('/api/binance/exchange-info');
+      let data: Ticker[] = [];
       if (response.ok) {
-        const data = await response.json();
-        setAllTickers(data);
-        setHasLoadedAll(true);
+        data = await response.json();
       }
+      // Falcon testnet markets are not on Binance — append explicitly.
+      const merged = [...FALCON_TICKERS, ...data.filter((t: Ticker) => !isFalconTicker(t.value))];
+      setAllTickers(merged);
+      setHasLoadedAll(true);
     } catch (error) {
       console.error('Failed to load tickers:', error);
     } finally {
@@ -249,6 +252,18 @@ export function FavoritesOnlySelector({ value, onChange }: { value: string; onCh
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="bg-[#1e222d] border-[#2a2e39] min-w-[150px]">
+        <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-cyan-400/80">Falcon testnet</div>
+        {FALCON_TICKERS.map(ticker => (
+          <DropdownMenuItem
+            key={`falcon-${ticker.value}`}
+            onClick={() => onChange(ticker.value)}
+            className={`text-white hover:bg-[#2a2e39] cursor-pointer ${ticker.value === value ? 'bg-[#2a2e39]' : ''}`}
+            data-testid={`falcon-ticker-${ticker.value}`}
+          >
+            {ticker.label}
+          </DropdownMenuItem>
+        ))}
+        <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-gray-500">Binance</div>
         {favorites.map(ticker => (
           <DropdownMenuItem
             key={ticker.value}

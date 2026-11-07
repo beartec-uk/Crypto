@@ -29,7 +29,7 @@ Natural key from `fd-pl` `Fill` (`orderbook.rs`):
 **Gap:** if two distinct on-chain fills ever share every serialized field, `INSERT OR IGNORE` would collapse them. Bounded `raw_poll_snapshots` retained for audit. No invented synthetic IDs.
 
 ## Timestamps / candles
-`fpl_fills` has **no block timestamp**. `block_time_unix` is NULL; `first_seen_at` is ingestion only and **must not** be used as OHLCV time. Candle step is an explicit follow-up once a validated height→time source exists. No historical backfill beyond the live 200-fill ring (`RECENT_FILLS`).
+`fpl_fills` has **no block timestamp**. `block_time_unix` stays NULL. `first_seen_at` is ingestion only and **must not** be used as OHLCV time. Physics ms is not a validated UTC source. No historical backfill beyond the live 200-fill ring (`RECENT_FILLS`).
 
 ## Quota (default)
 - Pairs allowlisted: `BTC4`, `USDC`
@@ -46,3 +46,14 @@ journalctl -u falcon-fills-store.service -n 50 --no-pager
 sudo -u falcon-fills sqlite3 /var/lib/falcon-fills-store/fills.sqlite 'SELECT COUNT(*) FROM fills;'
 sudo systemctl start falcon-fills-backup.service
 ```
+
+## Timestamps & candles (honesty contract)
+- `fpl_fills` has no trade timestamp. `first_seen_at` is collector arrival, not candle time.
+- Explorer tips (`GET /api/v1/explorer/blocks`) are classified with wallet #187 `honestSealTimes` rules. See `docs/FALCON_CANDLES_TICKER.md`.
+  - Physics ms (`sealed_at_ms` / `tip_sealed_at_ms` / `last_pack_at_ms`) is `chain_physics`. Never an ISO candle time.
+  - `sealed_at` ISO is not verified UTC unless it is the #187 `utc_committed` form, and even then this package does not open a verified bucket.
+  - `observed_at` is explorer arrival (`observer`). Not trade time.
+- Fills stay `time_status=untimed` and are counted in `coverage.untimedFills`. They are not dropped and not placed on a UTC axis.
+- `block_times` is still keyed by height. That join does not admit verified UTC.
+- `sync_candles.py` can POST 1m/5m/15m/1h coverage to `/api/crypto/falcon/ingest`. Published candle arrays are empty while verified UTC is disabled. USDC-FPL is exported on its own; empty USDC is not replaced with BTC4. Quote is FPL.
+- Dedup unique key includes `dup_seq` so identical full-field fills in one ring snapshot are preserved; raw snapshots remain evidence.

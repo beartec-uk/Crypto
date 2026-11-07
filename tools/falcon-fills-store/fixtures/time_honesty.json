@@ -1,0 +1,375 @@
+{
+  "contract": "Package A. Verified UTC buckets are disabled. A parseable sealed_at is not verified UTC. Network 2300 activation is not armed.",
+  "cases": [
+    {
+      "name": "physics_only",
+      "block": {
+        "height": 1,
+        "sealed_at": null,
+        "sealed_at_ms": 42,
+        "sealed_at_quality": "chain_physics",
+        "sealed_utc": null,
+        "sealed_utc_ms": null,
+        "sealed_utc_quality": "unavailable",
+        "sealed_utc_source": "none",
+        "observed_at": null
+      },
+      "expect": {
+        "timeQuality": "chain_physics",
+        "timeSource": "chain_physics",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "chain_physics",
+        "utcCandidateUnix": null,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "physics_as_iso",
+      "block": {
+        "height": 2,
+        "sealed_at": "2026-11-06T00:00:00.000Z",
+        "sealed_at_ms": 1793923200000,
+        "sealed_at_quality": "chain_physics",
+        "sealed_utc": null,
+        "sealed_utc_ms": null,
+        "sealed_utc_quality": "unavailable",
+        "sealed_utc_source": "none",
+        "observed_at": "2026-11-06T00:00:05.000Z"
+      },
+      "expect": {
+        "timeQuality": "chain_physics",
+        "timeSource": "chain_physics",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "physics_iso_rejected",
+        "utcCandidateUnix": null,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "physics_last_pack_at_ms",
+      "block": {
+        "height": 3,
+        "last_pack_at_ms": 99,
+        "sealed_at": null,
+        "observed_at": null
+      },
+      "expect": {
+        "timeQuality": "chain_physics",
+        "timeSource": "chain_physics",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "chain_physics",
+        "utcCandidateUnix": null,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "observed_only",
+      "block": {
+        "height": 4,
+        "sealed_at": null,
+        "observed_at": "2026-11-06T01:00:00Z"
+      },
+      "expect": {
+        "timeQuality": "observer",
+        "timeSource": "observer",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "observer_not_trade_time",
+        "utcCandidateUnix": null,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "first_seen_only",
+      "block": {
+        "height": 5,
+        "first_seen_at": "2026-11-06T01:00:00Z"
+      },
+      "expect": {
+        "timeQuality": "observer",
+        "timeSource": "observer",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "observer_not_trade_time",
+        "utcCandidateUnix": null,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "live_tip_sealed_at_null",
+      "block": {
+        "height": 823863,
+        "network_id": 2300,
+        "hash": "tip",
+        "sealed_at": null,
+        "sealed_utc_quality": "unavailable",
+        "sealed_utc_source": "none",
+        "observed_at": "2026-11-06T18:02:00Z"
+      },
+      "expect": {
+        "timeQuality": "observer",
+        "timeSource": "observer",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "observer_not_trade_time",
+        "utcCandidateUnix": null,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "missing_utc",
+      "block": {
+        "height": 6,
+        "hash": "abc",
+        "sealed_at": null
+      },
+      "expect": {
+        "timeQuality": "unavailable",
+        "timeSource": "none",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "missing_utc",
+        "utcCandidateUnix": null,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "zero_utc",
+      "block": {
+        "height": 7,
+        "sealed_utc_ms": 0,
+        "sealed_utc_quality": "utc_committed",
+        "sealed_utc_source": "signed_utc_v5",
+        "sealed_at": null,
+        "sealed_utc": null
+      },
+      "expect": {
+        "timeQuality": "unavailable",
+        "timeSource": "none",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "zero_utc",
+        "utcCandidateUnix": null,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "malformed_time",
+      "block": {
+        "height": 8,
+        "sealed_at": "yesterday",
+        "sealed_utc": "not-a-time",
+        "sealed_utc_ms": "nope",
+        "sealed_utc_quality": "utc_committed",
+        "sealed_utc_source": "signed_utc_v5"
+      },
+      "expect": {
+        "timeQuality": "unavailable",
+        "timeSource": "none",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "malformed_time",
+        "utcCandidateUnix": null,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "negative_utc_ms",
+      "block": {
+        "height": 9,
+        "sealed_utc_ms": -1,
+        "sealed_utc_quality": "utc_committed",
+        "sealed_utc_source": "signed_utc_v5"
+      },
+      "expect": {
+        "timeQuality": "unavailable",
+        "timeSource": "none",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "malformed_time",
+        "utcCandidateUnix": null,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "bool_utc_ms",
+      "block": {
+        "height": 10,
+        "sealed_utc_ms": true,
+        "sealed_utc_quality": "utc_committed"
+      },
+      "expect": {
+        "timeQuality": "unavailable",
+        "timeSource": "none",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "malformed_time",
+        "utcCandidateUnix": null,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "pre_activation",
+      "block": {
+        "height": 11,
+        "network_id": 2300,
+        "utc_activated": false,
+        "sealed_at": null,
+        "sealed_utc": null,
+        "sealed_utc_ms": 1793923200000,
+        "sealed_utc_quality": "unavailable",
+        "sealed_utc_source": "none",
+        "observed_at": null
+      },
+      "expect": {
+        "timeQuality": "unavailable",
+        "timeSource": "none",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "pre_activation",
+        "utcCandidateUnix": null,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "legacy_sealed_at_iso",
+      "block": {
+        "height": 12,
+        "sealed_at": "2026-11-06T01:00:00Z"
+      },
+      "expect": {
+        "timeQuality": "unavailable",
+        "timeSource": "none",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "sealed_at_not_verified_utc",
+        "utcCandidateUnix": null,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "sealed_at_iso_with_observer",
+      "block": {
+        "height": 13,
+        "sealed_at": "2026-11-06T01:00:00Z",
+        "observed_at": "2026-11-06T01:00:02Z"
+      },
+      "expect": {
+        "timeQuality": "unavailable",
+        "timeSource": "none",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "sealed_at_not_verified_utc",
+        "utcCandidateUnix": null,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "iso_disagrees_with_utc_ms",
+      "block": {
+        "height": 14,
+        "sealed_utc_ms": 1793923200000,
+        "sealed_utc_quality": "utc_committed",
+        "sealed_utc_source": "signed_utc_v5",
+        "sealed_utc": "2026-11-06T00:00:00.000Z",
+        "sealed_at": "2026-11-06T01:00:00.000Z"
+      },
+      "expect": {
+        "timeQuality": "unavailable",
+        "timeSource": "none",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "sealed_at_disagrees",
+        "utcCandidateUnix": null,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "utc_quality_without_signed_source",
+      "block": {
+        "height": 15,
+        "sealed_utc_ms": 1793923200000,
+        "sealed_utc_quality": "utc_committed",
+        "sealed_utc_source": "none",
+        "sealed_utc": "2026-11-06T00:00:00.000Z",
+        "sealed_at": "2026-11-06T00:00:00.000Z"
+      },
+      "expect": {
+        "timeQuality": "unavailable",
+        "timeSource": "none",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "utc_not_committed",
+        "utcCandidateUnix": null,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "utc_committed_network_2300",
+      "block": {
+        "height": 16,
+        "network_id": 2300,
+        "utc_activated": true,
+        "hash": "abc123",
+        "sealed_utc_ms": 1793923200000,
+        "sealed_utc_quality": "utc_committed",
+        "sealed_utc_source": "signed_utc_v5",
+        "sealed_utc": "2026-11-06T00:00:00.000Z",
+        "sealed_at": "2026-11-06T00:00:00.000Z"
+      },
+      "expect": {
+        "timeQuality": "utc_committed",
+        "timeSource": "signed_utc_v5",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": true,
+        "reason": "pre_activation",
+        "utcCandidateUnix": 1793923200,
+        "emittedIso": null
+      }
+    },
+    {
+      "name": "utc_committed_gate_off",
+      "block": {
+        "height": 17,
+        "network_id": 999,
+        "utc_activated": true,
+        "hash": "deadbeef",
+        "sealed_utc_ms": 1793923200000,
+        "sealed_utc_quality": "utc_committed",
+        "sealed_utc_source": "signed_utc_v5",
+        "sealed_utc": "2026-11-06T00:00:00.000Z",
+        "sealed_at": "2026-11-06T00:00:00.000Z"
+      },
+      "expect": {
+        "timeQuality": "utc_committed",
+        "timeSource": "signed_utc_v5",
+        "verifiedUtc": false,
+        "bucketUnix": null,
+        "preActivation": false,
+        "reason": "verified_utc_not_enabled",
+        "utcCandidateUnix": 1793923200,
+        "emittedIso": null
+      }
+    }
+  ]
+}

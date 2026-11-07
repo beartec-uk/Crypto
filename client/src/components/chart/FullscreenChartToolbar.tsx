@@ -3,6 +3,7 @@ import { X, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatTickerDisplay } from '@/lib/chart/priceUtils';
+import { FALCON_CANDLE_TIMEFRAMES, isFalconTicker } from '@/lib/tickerUtils';
 
 interface FullscreenChartToolbarProps {
   symbol: string;
@@ -63,7 +64,10 @@ export function FullscreenChartToolbar({
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="bg-slate-800 border-slate-600">
-          {TIMEFRAMES.map((tf) => (
+          {(isFalconTicker(symbol)
+            ? TIMEFRAMES.filter((tf) => (FALCON_CANDLE_TIMEFRAMES as readonly string[]).includes(tf))
+            : TIMEFRAMES
+          ).map((tf) => (
             <SelectItem key={tf} value={tf} className="text-white hover:bg-slate-700 focus:bg-slate-700 cursor-pointer">
               {tf}
             </SelectItem>

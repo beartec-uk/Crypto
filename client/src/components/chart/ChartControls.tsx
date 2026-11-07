@@ -1,3 +1,4 @@
+import { FALCON_CANDLE_TIMEFRAMES, isFalconTicker } from '@/lib/tickerUtils';
 // Copyright (c) 2025-2026 BEARTEC (Scott Reynolds). All rights reserved.
 interface ChartControlsProps {
   symbol: string;
@@ -46,21 +47,9 @@ export function ChartControls({
         onChange={(e) => onIntervalChange(e.target.value)}
         className="px-3 py-2 bg-slate-800/90 text-white rounded-lg border border-slate-600 hover:bg-slate-700 transition-all text-sm font-medium"
       >
-        <option value="1m">1m</option>
-        <option value="3m">3m</option>
-        <option value="5m">5m</option>
-        <option value="15m">15m</option>
-        <option value="30m">30m</option>
-        <option value="1h">1h</option>
-        <option value="2h">2h</option>
-        <option value="4h">4h</option>
-        <option value="6h">6h</option>
-        <option value="8h">8h</option>
-        <option value="12h">12h</option>
-        <option value="1d">1D</option>
-        <option value="3d">3D</option>
-        <option value="1w">1W</option>
-        <option value="1M">1M</option>
+        {(isFalconTicker(symbol) ? [...FALCON_CANDLE_TIMEFRAMES] : ['1m','3m','5m','15m','30m','1h','2h','4h','6h','8h','12h','1d','3d','1w','1M']).map((tf) => (
+          <option key={tf} value={tf}>{tf === '1d' ? '1D' : tf === '1w' ? '1W' : tf === '1M' ? '1M' : tf}</option>
+        ))}
       </select>
     </div>
   );

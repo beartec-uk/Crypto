@@ -2592,7 +2592,9 @@ interface GrokWaveAnalysis {
   riskFactors?: string[];
 }
 
-import { incrementTickerClick, getFavorites } from '@/lib/tickerUtils';
+import { incrementTickerClick, getFavorites, isFalconTicker, isFalconCandleTimeframe } from '@/lib/tickerUtils';
+import { FalconChartStatusBanner } from '@/components/falcon/FalconChartStatusBanner';
+import { parseFalconCandleMeta } from '@/lib/falconChartStatus';
 import { getFutureBarCount, getInitialVisibleFutureBarCount } from '@/lib/chart/timeUtils';
 import { FavoritesOnlySelector } from '@/components/TickerSelector';
 const TIMEFRAMES = [
@@ -2602,6 +2604,13 @@ const TIMEFRAMES = [
   { label: '4 Hour', value: '4h' },
   { label: '1 Hour', value: '1h' },
   { label: '15 Min', value: '15m' },
+];
+
+const FALCON_ELLIOTT_TIMEFRAMES = [
+  { label: '1 Hour', value: '1h' },
+  { label: '15 Min', value: '15m' },
+  { label: '5 Min', value: '5m' },
+  { label: '1 Min', value: '1m' },
 ];
 
 // Timeframe hierarchy for drill-down (only 1 level down allowed)
@@ -2733,6 +2742,12 @@ export default function CryptoElliottWave() {
 
   const [symbol, setSymbol] = useState('XRPUSDT');
   const [timeframe, setTimeframe] = useState('15m');
+  const visibleTimeframes = isFalconTicker(symbol) ? FALCON_ELLIOTT_TIMEFRAMES : TIMEFRAMES;
+  useEffect(() => {
+    if (isFalconTicker(symbol) && !isFalconCandleTimeframe(timeframe)) {
+      setTimeframe('15m');
+    }
+  }, [symbol, timeframe]);
   const [candles, setCandles] = useState<CandleData[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [waveAutoSnapEnabled, setWaveAutoSnapEnabled] = useState(true); // Auto-snap waves to highs/lows
@@ -3118,7 +3133,12 @@ export default function CryptoElliottWave() {
     queryKey: ['/api/crypto/extended-history', symbol, timeframe],
     queryFn: async () => {
       console.log('📊 Fetching 1000 candles for', symbol, timeframe);
-      const response = await fetch(`/api/crypto/extended-history?symbol=${symbol}&timeframe=${timeframe}&limit=1000`);
+      const falcon = isFalconTicker(symbol);
+      const response = await fetch(
+        falcon
+          ? `/api/crypto/falcon/candles?pair=${encodeURIComponent(symbol)}&timeframe=${encodeURIComponent(timeframe)}&limit=1000`
+          : `/api/crypto/extended-history?symbol=${symbol}&timeframe=${timeframe}&limit=1000`
+      );
       if (!response.ok) {
         const error = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
         throw new Error(error.error || `Failed to fetch history (${response.status})`);
@@ -3128,6 +3148,8 @@ export default function CryptoElliottWave() {
       return data;
     },
     retry: 1,
+    refetchInterval: isFalconTicker(symbol) ? 15000 : false,
+    enabled: !isFalconTicker(symbol) || isFalconCandleTimeframe(timeframe),
   });
 
   useEffect(() => {
@@ -7412,7 +7434,7 @@ const aiAnalyze = useMutation({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {TIMEFRAMES.map(t => (
+              {visibleTimeframes.map(t => (
                 <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
               ))}
             </SelectContent>
@@ -7450,7 +7472,7 @@ const aiAnalyze = useMutation({
               <SelectTrigger className="w-20 h-8 bg-slate-800 border-slate-700 text-sm">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700">{TIMEFRAMES.map(t => <SelectItem key={t.value} value={t.value} className="text-gray-200 hover:bg-slate-700 focus:bg-slate-700">{t.label}</SelectItem>)}</SelectContent>
+              <SelectContent className="bg-slate-800 border-slate-700">{visibleTimeframes.map(t => <SelectItem key={t.value} value={t.value} className="text-gray-200 hover:bg-slate-700 focus:bg-slate-700">{t.label}</SelectItem>)}</SelectContent>
             </Select>
           </div>
 
@@ -7654,6 +7676,16 @@ const aiAnalyze = useMutation({
         {/* Chart */}
         <Card className="bg-slate-900/50 border-slate-800">
           <CardContent className="p-2">
+            {isFalconTicker(symbol) && (
+              <FalconChartStatusBanner
+                className="mb-2"
+                pair={symbol}
+                candleCount={Array.isArray(historyData?.candles) ? historyData!.candles.length : 0}
+                isLoading={historyLoading}
+                error={(historyError as Error | null) ?? null}
+                meta={historyData ? parseFalconCandleMeta(historyData, symbol) : null}
+              />
+            )}
             {historyLoading ? (
               <div className="h-[500px] flex items-center justify-center">
                 <div className="text-center">
