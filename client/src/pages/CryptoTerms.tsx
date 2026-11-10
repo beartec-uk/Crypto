@@ -1,7 +1,7 @@
 // Copyright (c) 2026 BEARTEC LTD. All rights reserved.
 import { FileText } from 'lucide-react';
 import { Link } from 'wouter';
-import { LegalPageLayout, Section, LegalTable, TBC, CONTACT_EMAIL, COMPANY_DETAILS } from '@/components/legal/LegalPageLayout';
+import { LegalPageLayout, Section, LegalTable, CONTACT_EMAIL, COMPANY_DETAILS } from '@/components/legal/LegalPageLayout';
 
 const mail = <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#00c4b4] hover:underline">{CONTACT_EMAIL}</a>;
 
@@ -22,7 +22,7 @@ export default function CryptoTerms() {
       </Section>
 
       <Section title="3. Who can use BearTec Crypto">
-        <p>You must be 18 or over and able to make a binding contract. The service is aimed at users in the United Kingdom <TBC>whether non-UK users are accepted, and any excluded countries</TBC>. You must give accurate details, keep your sign-in (provided through our sign-in provider Clerk) secure and not share your account.</p>
+        <p>You must be 18 or over and able to make a binding contract. The service is run from the United Kingdom and is open to users in other countries too. You are responsible for making sure you are allowed to use it where you live. You must give accurate details, keep your sign-in (provided through our sign-in provider Clerk) secure and not share your account.</p>
       </Section>
 
       <Section title="4. Plans and prices">
@@ -45,7 +45,7 @@ export default function CryptoTerms() {
       <Section title="5. Billing and renewal">
         <ul className="list-disc list-inside space-y-2">
           <li>Paid plans are billed monthly in advance through Stripe and renew automatically until you cancel.</li>
-          <li>We will send any reminders required by law before renewals <TBC>reminder timing once the DMCC subscription rules apply from 1 January 2027</TBC>.</li>
+          <li>We will email you a reminder 7 days before each renewal.</li>
           <li>We may change prices with at least 30 days' notice. If you do not want the new price, you can cancel before it applies.</li>
           <li>If a payment fails, we will tell you and may pause paid features until it is paid.</li>
         </ul>
