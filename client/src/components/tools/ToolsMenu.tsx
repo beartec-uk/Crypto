@@ -6,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { useShowOwnerOnlyTools } from '@/hooks/useShowOwnerOnlyTools';
+import type { AutoFibSettings } from '@/types/autoFib';
 
 interface ToolsMenuProps {
   highLowEnabled: boolean;
@@ -38,6 +39,10 @@ interface ToolsMenuProps {
   onToggleRewind: (enabled: boolean) => void;
   onOpenRewindSettings: () => void;
   onOpenTrade?: () => void;
+  /** Auto-Fibonacci (moved here from the Indicators > SMC tab — it's a general tool). */
+  autoFibSettings?: AutoFibSettings;
+  onAutoFibToggle?: (enabled: boolean) => void;
+  onOpenAutoFib?: () => void;
   className?: string;
 }
 
@@ -72,6 +77,9 @@ export function ToolsMenu({
   onToggleRewind,
   onOpenRewindSettings,
   onOpenTrade,
+  autoFibSettings,
+  onAutoFibToggle,
+  onOpenAutoFib,
   className,
 }: ToolsMenuProps) {
   const [open, setOpen] = useState(false);
@@ -84,6 +92,7 @@ export function ToolsMenu({
     vpEnabled ||
     volumeEnabled ||
     volumeEmaEnabled ||
+    !!autoFibSettings?.enabled ||
     (showOwnerOnlyTools && autoTrendlineEnabled) ||
     (showOwnerOnlyTools && swoopEnabled) ||
     (showOwnerOnlyTools && liquidityHeatmapEnabled) ||
@@ -113,7 +122,8 @@ export function ToolsMenu({
       <PopoverContent
         side="bottom"
         align="start"
-        className="w-56 p-0 bg-slate-900 border-slate-700 text-slate-100"
+        collisionPadding={12}
+        className="w-56 max-h-[min(70dvh,var(--radix-popover-content-available-height,70dvh))] overflow-y-auto p-0 bg-slate-900 border-slate-700 text-slate-100"
       >
         <div className="flex items-center justify-between px-3 py-2 border-b border-slate-700 bg-slate-800">
           <span className="text-xs font-semibold text-slate-300">Tools</span>
@@ -182,6 +192,22 @@ export function ToolsMenu({
               </Button>
             </div>
           </div>
+          {autoFibSettings && onAutoFibToggle && (
+            <div className="flex items-center justify-between py-1.5 px-1">
+              <div className="min-w-0 mr-3">
+                <div className="text-sm font-medium text-slate-100 leading-tight">Auto-Fibonacci</div>
+                <div className="text-xs text-slate-400 leading-tight">Swing-based fib levels</div>
+              </div>
+              <div className="flex items-center gap-1">
+                <Switch checked={autoFibSettings.enabled} onCheckedChange={onAutoFibToggle} className="shrink-0 data-[state=checked]:bg-blue-600" data-testid="switch-auto-fib" />
+                {onOpenAutoFib && (
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-400 hover:text-white hover:bg-slate-700" title="Auto-Fibonacci Settings" onClick={() => { setOpen(false); onOpenAutoFib(); }} data-testid="btn-auto-fib-settings">
+                    <Settings className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
           {showOwnerOnlyTools && (
           <>
           <div className="flex items-center justify-between py-1.5 px-1">

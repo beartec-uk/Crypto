@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { IChartApi, LineSeries } from 'lightweight-charts';
 import type { MAConfig } from '@/types/chart.types';
+import { projectSeriesOntoCandles } from '@/lib/chart/projectHtfSeries';
 
 interface MovingAveragesProps {
   chart: IChartApi | null;
@@ -12,6 +13,9 @@ interface MovingAveragesProps {
   emaHTFDataCache: React.MutableRefObject<Record<string, any[]>>;
   symbol: string;
   interval: string;
+  /** Changes whenever new HTF candles land in emaHTFDataCache (a ref), so the
+   *  HTF EMA is drawn as soon as its data arrives rather than on the next poll. */
+  htfCacheVersion?: number;
 }
 
 export function MovingAverages({
@@ -22,7 +26,8 @@ export function MovingAverages({
   calculateEMA,
   emaHTFDataCache,
   symbol,
-  interval
+  interval,
+  htfCacheVersion = 0,
 }: MovingAveragesProps) {
   const emaSeriesRefs = useRef<Record<string, any>>({});
 
@@ -97,14 +102,15 @@ export function MovingAverages({
           // Pad with undefined to align with candle array
           const paddedEmaValues = new Array(config.period - 1).fill(undefined).concat(htfEmaValues);
           
-          // Map HTF EMA to current chart timeframe
-          emaData = htfCandles.map((c, i) => ({
-            time: c.time as any,
-            value: paddedEmaValues[i]
-          })).filter(d => d.value !== undefined);
+          // Map HTF EMA onto the current chart's candle times (no extra
+          // timestamps in the shared time scale).
+          emaData = projectSeriesOntoCandles(
+            candles.map(c => Number(c.time)),
+            htfCandles.map(c => Number(c.time)),
+            paddedEmaValues,
+          ) as { time: any; value: number }[];
         } else if (refs[config.id]) {
-          // Cache was cleared (e.g. on timeframe change) – remove stale timestamps
-          // from the merged timeline so fitContent only shows the current timeframe.
+          // HTF data not loaded yet (or symbol changed) – clear any old line.
           try { refs[config.id].setData([]); } catch (e) {
             console.warn('[MovingAverages] Failed to clear HTF EMA series data:', e);
           }
@@ -143,7 +149,7 @@ export function MovingAverages({
       });
       emaSeriesRefs.current = {};
     };
-  }, [chart, maConfigs, show, candles, calculateEMA, symbol, interval]);
+  }, [chart, maConfigs, show, candles, calculateEMA, symbol, interval, htfCacheVersion]);
 
   return null;
 }

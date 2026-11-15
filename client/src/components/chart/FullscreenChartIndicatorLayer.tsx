@@ -47,6 +47,7 @@ interface FullscreenChartIndicatorLayerProps {
   emaConfigs: any;
   showEma: boolean;
   emaHTFDataCache: any;
+  htfCacheVersion?: number;
   symbol: string;
   interval: string;
   elderImpulseEnabled: boolean;
@@ -128,7 +129,7 @@ interface FullscreenChartIndicatorLayerProps {
 
 export function FullscreenChartIndicatorLayer(props: FullscreenChartIndicatorLayerProps) {
   const {
-    chart, candleSeries, candles, calculateEMA, emaConfigs, showEma, emaHTFDataCache, symbol, interval, elderImpulseEnabled,
+    chart, candleSeries, candles, calculateEMA, emaConfigs, showEma, emaHTFDataCache, htfCacheVersion, symbol, interval, elderImpulseEnabled,
     vwapShowSession, vwapShowDaily, vwapShowWeekly, vwapShowMonthly, vwapShowRolling, vwapRollingPeriod,
     fvgs, fvgSettings, orderBlocks, obSettings, breakers, breakerSettings, structureBreaks, swingPoints, sessionSeparators, bosSettings,
     liquidityZones, liquiditySettings, pdZones, pdZoneSettings, autoFibResult, autoFibSettings,
@@ -151,7 +152,7 @@ export function FullscreenChartIndicatorLayer(props: FullscreenChartIndicatorLay
   const sharedSidebarWidth = typeof vpSettings?.width === 'number' ? vpSettings.width : 22;
   return (
     <>
-      <MovingAverages chart={chart} maConfigs={emaConfigs} show={showEma} candles={candles} calculateEMA={calculateEMA} emaHTFDataCache={emaHTFDataCache} symbol={symbol} interval={interval} />
+      <MovingAverages chart={chart} maConfigs={emaConfigs} show={showEma} candles={candles} calculateEMA={calculateEMA} emaHTFDataCache={emaHTFDataCache} htfCacheVersion={htfCacheVersion} symbol={symbol} interval={interval} />
       <ElderImpulseRenderer chart={chart} candles={candles} show={elderImpulseEnabled} />
       <VWAPRenderer chart={chart} candles={candles} showSession={vwapShowSession} showDaily={vwapShowDaily} showWeekly={vwapShowWeekly} showMonthly={vwapShowMonthly} showRolling={vwapShowRolling} rollingPeriod={vwapRollingPeriod} />
       <FVGRenderer chart={chart} candleSeries={candleSeries} fvgs={fvgs} settings={fvgSettings} />
