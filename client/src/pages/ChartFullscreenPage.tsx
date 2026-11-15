@@ -876,7 +876,7 @@ export function ChartFullscreenPage({
   }, [divergencePoints, divSettings.settings.historyCount]);
 
   // Hooks - HTF data cache
-  const { htfDataCache } = useHTFDataCache({
+  const { htfDataCache, cacheVersion: htfCacheVersion } = useHTFDataCache({
     symbol,
     currentTimeframe: timeframe,
     emaConfigs: indicators.ema.configs,
@@ -3148,6 +3148,7 @@ export function ChartFullscreenPage({
           emaConfigs={indicators.ema.configs}
           showEma={indicators.ema.show}
           emaHTFDataCache={htfDataCache}
+          htfCacheVersion={htfCacheVersion}
           symbol={symbol}
           interval={renderedTimeframe}
           elderImpulseEnabled={showOwnerOnlyTools && indicators.elderImpulse.show}

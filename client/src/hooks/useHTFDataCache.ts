@@ -26,8 +26,15 @@ interface UseHTFDataCacheOptions {
 
 interface UseHTFDataCacheReturn {
   htfDataCache: React.MutableRefObject<Record<string, CandleData[]>>;
+  /** Bumps every time new HTF candles land in the cache, so consumers re-render. */
+  cacheVersion: number;
   isLoading: boolean;
 }
+
+// Enough history for long HTF EMAs (e.g. 200W) while staying bounded.
+const HTF_TARGET_CANDLES = 2000;
+// Hard stop on paging so a misbehaving API can never loop forever.
+const HTF_MAX_PAGES = 3;
 
 export function useHTFDataCache({
   symbol,
@@ -36,87 +43,90 @@ export function useHTFDataCache({
   enabled,
 }: UseHTFDataCacheOptions): UseHTFDataCacheReturn {
   const [isLoading, setIsLoading] = useState(false);
+  const [cacheVersion, setCacheVersion] = useState(0);
   const htfDataCache = useRef<Record<string, CandleData[]>>({});
   const prevSymbolRef = useRef<string>(symbol);
 
-  // Clear cache when symbol changes
+  // Clear cache when symbol changes.
+  // NOTE: we no longer clear on timeframe change. HTF candles are keyed by
+  // symbol+HTF and don't depend on the chart timeframe; MovingAverages now maps
+  // HTF values onto the chart's own candle times, so no stale timestamps leak
+  // into the time scale. Clearing on every switch forced a refetch and left the
+  // HTF EMA blank (or squashed) after each timeframe change.
   useEffect(() => {
     if (prevSymbolRef.current !== symbol) {
       htfDataCache.current = {};
       prevSymbolRef.current = symbol;
-      console.log('[EMA HTF] Cache cleared due to symbol change');
+      setCacheVersion(v => v + 1);
     }
   }, [symbol]);
 
-  // Clear cache when timeframe changes so the EMA series is reset and fitContent
-  // doesn't zoom out to show the full HTF history on the new timeframe.
-  useEffect(() => {
-    htfDataCache.current = {};
-    console.log('[EMA HTF] Cache cleared due to timeframe change');
-  }, [currentTimeframe]);
+  // Stable key of the HTF timeframes we need, so unrelated config edits
+  // (colour, width, period) don't refire the fetch.
+  const htfKey = [...new Set(
+    emaConfigs
+      .map(c => c.timeframe)
+      .filter(tf => tf && tf !== 'current' && tf !== currentTimeframe),
+  )].sort().join(',');
 
-  // Fetch higher timeframe data
   useEffect(() => {
-    if (!enabled || !symbol) return;
+    if (!enabled || !symbol || !htfKey) return;
+
+    const controller = new AbortController();
+    let cancelled = false;
 
     const fetchHTFData = async () => {
-      const htfTimeframes = emaConfigs
-        .filter(c => c.timeframe !== 'current' && c.timeframe !== currentTimeframe)
-        .map(c => c.timeframe);
-      
-      const uniqueTimeframes = [...new Set(htfTimeframes)];
-      if (uniqueTimeframes.length === 0) return;
-
       setIsLoading(true);
-      
-      for (const tf of uniqueTimeframes) {
+      for (const tf of htfKey.split(',')) {
+        if (cancelled) return;
         const cacheKey = `${symbol}_${tf}`;
         if (htfDataCache.current[cacheKey]) continue;
-        
+
         try {
           const binanceInterval = convertTimeframe(tf);
-          const htfTargetCandles = 2000;
           const allKlines: any[] = [];
           let endTime = Date.now();
 
-          while (allKlines.length < htfTargetCandles) {
+          for (let page = 0; page < HTF_MAX_PAGES && allKlines.length < HTF_TARGET_CANDLES; page++) {
             const response = await fetch(
-              `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${binanceInterval}&limit=1000&endTime=${endTime}`
+              `https://api.binance.com/api/v3/klines?symbol=${encodeURIComponent(symbol)}&interval=${binanceInterval}&limit=1000&endTime=${endTime}`,
+              { signal: controller.signal },
             );
-
             if (!response.ok) break;
-
             const klines = await response.json();
-            if (!klines.length) break;
-
+            if (!Array.isArray(klines) || !klines.length) break;
             allKlines.unshift(...klines);
             endTime = klines[0][0] - 1;
-
             if (klines.length < 1000) break;
           }
 
+          if (cancelled) return;
           if (allKlines.length > 0) {
-            const transformedCandles = allKlines.slice(-htfTargetCandles).map((kline: any[]) => ({
+            htfDataCache.current[cacheKey] = allKlines.slice(-HTF_TARGET_CANDLES).map((kline: any[]) => ({
               time: Math.floor(kline[0] / 1000),
               open: parseFloat(kline[1]),
               high: parseFloat(kline[2]),
               low: parseFloat(kline[3]),
               close: parseFloat(kline[4]),
-              volume: parseFloat(kline[5])
+              volume: parseFloat(kline[5]),
             }));
-            htfDataCache.current[cacheKey] = transformedCandles;
-            console.log(`[EMA HTF] Fetched ${tf} data for ${symbol}: ${transformedCandles.length} candles`);
+            setCacheVersion(v => v + 1);
           }
         } catch (e) {
-          console.error(`[EMA HTF] Failed to fetch ${tf} data:`, e);
+          if ((e as Error)?.name !== 'AbortError') {
+            console.error(`[EMA HTF] Failed to fetch ${tf} data:`, e);
+          }
         }
       }
-      
-      setIsLoading(false);
+      if (!cancelled) setIsLoading(false);
     };
-    
-    fetchHTFData();
-  }, [enabled, emaConfigs, symbol, currentTimeframe]);
 
-  return { htfDataCache, isLoading };
+    fetchHTFData();
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [enabled, htfKey, symbol]);
+
+  return { htfDataCache, cacheVersion, isLoading };
 }

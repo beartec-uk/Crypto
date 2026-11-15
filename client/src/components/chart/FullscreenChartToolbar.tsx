@@ -29,8 +29,15 @@ export function FullscreenChartToolbar({
   return (
     <div className="bt-dark-surface bg-slate-900 border-b border-slate-700 px-2 py-2 flex items-center justify-between gap-2">
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" onClick={onClose} aria-label="Close chart">
-          <X className="h-3.5 w-3.5" />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onClose}
+          aria-label="Close chart"
+          title="Close chart"
+          className="bg-slate-800 text-white border-slate-600 hover:bg-slate-700 hover:text-white"
+        >
+          <X className="h-3.5 w-3.5 text-white" />
         </Button>
 
         {onOpenAlerts && (

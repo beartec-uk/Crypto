@@ -134,7 +134,6 @@ export function FullscreenChartActionToolbar(props: FullscreenChartActionToolbar
         fvgSettings={fvgSettings} onFVGSettingsChange={onFVGSettingsChange} obSettings={obSettings} onOBSettingsChange={onOBSettingsChange}
         breakerSettings={breakerSettings} onBreakerSettingsChange={onBreakerSettingsChange} bosSettings={bosSettings} onBOSSettingsChange={onBOSSettingsChange}
         liquiditySettings={liquiditySettings} onLiquiditySettingsChange={onLiquiditySettingsChange} pdZoneSettings={pdZoneSettings} onPDZoneSettingsChange={onPDZoneSettingsChange} onOpenSmc={onOpenSmc}
-        autoFibSettings={autoFibSettings} onAutoFibToggle={onAutoFibToggle} onOpenAutoFib={onOpenAutoFib}
       />
       <ToolsMenu
         highLowEnabled={highLowEnabled} onToggleHighLow={onToggleHighLow}
@@ -148,6 +147,7 @@ export function FullscreenChartActionToolbar(props: FullscreenChartActionToolbar
         liquidityHeatmapEnabled={liquidityHeatmapEnabled} onToggleLiquidityHeatmap={onToggleLiquidityHeatmap} onOpenLiquidityHeatmapSettings={onOpenLiquidityHeatmapSettings}
         gdsMiniBadgeEnabled={gdsMiniBadgeEnabled} onToggleGdsMiniBadge={onToggleGdsMiniBadge}
         rewindEnabled={rewindEnabled} onToggleRewind={onToggleRewind} onOpenRewindSettings={onOpenRewindSettings}
+        autoFibSettings={autoFibSettings} onAutoFibToggle={onAutoFibToggle} onOpenAutoFib={onOpenAutoFib}
         onOpenTrade={onOpenTrade}
       />
       <div className="w-px h-6 bg-slate-700" />
