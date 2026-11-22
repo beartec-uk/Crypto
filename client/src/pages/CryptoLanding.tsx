@@ -6,6 +6,7 @@ import videoFile from '@assets/grok_video_2025-11-13-19-48-28_1763063433278.mp4'
 import { MarketingAuthCtas } from '@/components/marketing/MarketingAuthCtas';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 import { MarketingHeader } from '@/components/marketing/MarketingHeader';
+import { ShopPromoSection } from '@/components/marketing/ShopPromoSection';
 
 const FREE_CARDS = [
   {
@@ -246,6 +247,8 @@ export default function CryptoLanding() {
           </Link>
         </div>
       </section>
+
+      <ShopPromoSection />
 
       <section id="cta" className="border-t border-white/10 px-6 py-24 sm:py-32" data-testid="section-cta">
         <div className="mx-auto max-w-3xl text-center">
