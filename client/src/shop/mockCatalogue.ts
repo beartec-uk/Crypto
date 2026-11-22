@@ -4,6 +4,11 @@
  * SHOPIFY_STORE_DOMAIN / SHOPIFY_STOREFRONT_TOKEN) or is unreachable, so preview
  * deploys still render. Modelled on the real Printful range in store puyw54-pw.
  * Mock variant ids start with "mock:" and can't be checked out.
+ *
+ * Images (client/public/shop-mock): Printful's own product mockups where we have them;
+ * otherwise our actual print file composited onto Printful's real blank-garment photo
+ * (files.cdn.printful.com catalogue images). Once the Storefront token is set, the real
+ * Shopify product images are used instead and none of these load.
  */
 import { colourHex, type ShopCategoryId, type ShopColour, type ShopProduct, type ShopVariant } from '@shared/shop/types';
 import type { ShopThemeId } from './themes';
@@ -73,20 +78,20 @@ const BEARTEC: MockDef[] = [
     id: 'bt-logo-tee-light',
     title: 'Logo Tee',
     tagline: 'Light Colours · two-tone, cyan bear',
-    colours: [['White', 'bt-logo-tee-white'], ['Natural', 'bt-logo-tee-natural'], ['Heather Grey', null]],
+    colours: [['White', 'bt-logo-tee-white'], ['Natural', 'bt-logo-tee-natural'], ['Heather Grey', 'bt-logo-tee-grey']],
   }),
   tee({
     id: 'bt-chest-tee-light',
     title: 'Chest Logo Tee',
     tagline: 'Light Colours · two-tone, cyan bear',
-    colours: [['White', 'bt-chest-tee-white'], ['Natural', 'bt-chest-tee-natural'], ['Heather Grey', null]],
+    colours: [['White', 'bt-chest-tee-white'], ['Natural', 'bt-chest-tee-natural'], ['Heather Grey', 'bt-chest-tee-grey']],
   }),
   hoodie({ id: 'bt-hoodie', title: 'Chest Logo Hoodie', tagline: 'Heavy blend, cyan logo', colours: [['Black', 'bt-hoodie-dark']] }),
   hoodie({
     id: 'bt-hoodie-light',
     title: 'Chest Logo Hoodie',
     tagline: 'Light Colours · two-tone, cyan bear',
-    colours: [['White', 'bt-hoodie-white'], ['Sand', 'bt-hoodie-sand'], ['Sport Grey', null]],
+    colours: [['White', 'bt-hoodie-white'], ['Sand', 'bt-hoodie-sand'], ['Sport Grey', 'bt-hoodie-grey']],
   }),
   { id: 'bt-dad-cap', title: 'Dad Cap', tagline: 'Embroidered, true cyan', category: 'caps', colours: [['Black', 'bt-dad-cap-black']], price: () => 30 },
   {
@@ -106,27 +111,42 @@ function falconDefs(): MockDef[] {
   const defs: MockDef[] = [];
   for (const [v, label] of versions) {
     const suffix = v === 'text' ? ' + FALCON PL' : '';
+    // Text versions use Printful's own light mockups for White/Natural/Sand; everything
+    // else is our print file composited onto Printful's blank-garment photo.
+    const t = v === 'text';
     defs.push(
-      tee({ id: `fa-logo-tee-${v}`, title: `Coin Logo Tee${suffix}`, tagline: `${label} · large front`, colours: [['Black', 'fa-logo-tee-black']] }),
+      tee({ id: `fa-logo-tee-${v}`, title: `Coin Logo Tee${suffix}`, tagline: `${label} · large front`, colours: [['Black', t ? 'fa-logo-tee-black' : 'fa-logo-tee-black-coin']] }),
       tee({
         id: `fa-logo-tee-light-${v}`,
         title: `Coin Logo Tee${suffix}`,
         tagline: `${label} · Light Colours`,
-        colours: [['White', 'fa-logo-tee-white'], ['Natural', 'fa-logo-tee-natural'], ['Heather Grey', null]],
+        colours: [
+          ['White', t ? 'fa-logo-tee-white' : 'fa-logo-tee-white-coin'],
+          ['Natural', t ? 'fa-logo-tee-natural' : 'fa-logo-tee-natural-coin'],
+          ['Heather Grey', `fa-logo-tee-grey-${v}`],
+        ],
       }),
-      tee({ id: `fa-chest-tee-${v}`, title: `Coin Chest Tee${suffix}`, tagline: `${label} · chest`, colours: [['Black', 'fa-logo-tee-black']] }),
+      tee({ id: `fa-chest-tee-${v}`, title: `Coin Chest Tee${suffix}`, tagline: `${label} · chest`, colours: [['Black', `fa-chest-tee-black-${v}`]] }),
       tee({
         id: `fa-chest-tee-light-${v}`,
         title: `Coin Chest Tee${suffix}`,
         tagline: `${label} · Light Colours`,
-        colours: [['White', 'fa-chest-tee-white'], ['Natural', 'fa-chest-tee-natural'], ['Heather Grey', null]],
+        colours: [
+          ['White', t ? 'fa-chest-tee-white' : 'fa-chest-tee-white-coin'],
+          ['Natural', t ? 'fa-chest-tee-natural' : 'fa-chest-tee-natural-coin'],
+          ['Heather Grey', `fa-chest-tee-grey-${v}`],
+        ],
       }),
-      hoodie({ id: `fa-hoodie-${v}`, title: `Coin Hoodie${suffix}`, tagline: `${label} · chest`, colours: [['Black', 'fa-hoodie-dark']] }),
+      hoodie({ id: `fa-hoodie-${v}`, title: `Coin Hoodie${suffix}`, tagline: `${label} · chest`, colours: [['Black', `fa-hoodie-dark-${v}`]] }),
       hoodie({
         id: `fa-hoodie-light-${v}`,
         title: `Coin Hoodie${suffix}`,
         tagline: `${label} · Light Colours`,
-        colours: [['White', 'fa-hoodie-white'], ['Sand', 'fa-hoodie-sand'], ['Sport Grey', null]],
+        colours: [
+          ['White', t ? 'fa-hoodie-white' : 'fa-hoodie-white-coin'],
+          ['Sand', t ? 'fa-hoodie-sand' : 'fa-hoodie-sand-coin'],
+          ['Sport Grey', `fa-hoodie-grey-${v}`],
+        ],
       }),
       { id: `fa-dad-cap-${v}`, title: `Coin Dad Cap${suffix}`, tagline: `${label} · embroidered`, category: 'caps', colours: [['Black', 'fa-dad-cap-black']], price: () => 27 },
       {
