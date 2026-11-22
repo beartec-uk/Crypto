@@ -112,6 +112,7 @@
     { "source": "/api/crypto/feedback-board/replies/:id", "destination": "/api/crypto/feedback-board/replies/[id]" },
     { "source": "/api/crypto/feedback-board/:id/replies", "destination": "/api/crypto/feedback-board/[id]/replies" },
     { "source": "/api/crypto/feedback-board/:id", "destination": "/api/crypto/feedback-board/[id]" },
+    { "source": "/shop", "destination": "/shop.html" },
     { "source": "/((?!api/|cold-signer/|admin(?:/|$)|dev(?:/|$)|assets/).*)", "destination": "/index.html" }
   ],
   "headers": [

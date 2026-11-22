@@ -37,12 +37,12 @@ export function CryptoNavigation() {
     }
   };
   
-  const navItems = [
+  const navItems: Array<{ path: string; icon: typeof ShoppingBag; label: string; badge?: string }> = [
     { path: '/crypto/feedback', icon: MessageSquare, label: 'Board' },
     { path: '/crypto/training', icon: GraduationCap, label: 'Training' },
     { path: '/cryptoindicators', icon: BarChart3, label: 'Charts' },
     { path: '/cryptoai', icon: Bot, label: 'AI' },
-    { path: '/shop', icon: ShoppingBag, label: 'Shop' },
+    { path: '/shop', icon: ShoppingBag, label: 'Shop', badge: 'New' },
   ];
 
   return (
@@ -66,7 +66,17 @@ export function CryptoNavigation() {
                       : 'text-slate-400 hover:text-white hover:bg-slate-800'
                   }`}
                 >
-                  <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="relative">
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    {item.badge && !isActive ? (
+                      <span
+                        className="absolute -right-2.5 -top-1.5 rounded-full bg-[#00c4b4] px-1 text-[8px] font-bold uppercase leading-3 text-black"
+                        aria-label={item.badge}
+                      >
+                        {item.badge}
+                      </span>
+                    ) : null}
+                  </span>
                   <span className="text-[10px] sm:text-xs font-medium">{item.label}</span>
                 </button>
               </Link>

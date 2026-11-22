@@ -9,6 +9,7 @@ import { CryptoAuthGate } from '@/components/CryptoAuthGate';
 import { InstallPrompt } from '@/components/InstallPrompt';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { RedirectTo } from '@/components/marketing/RedirectTo';
+import { ShopAnnouncementBar } from '@/components/marketing/ShopAnnouncementBar';
 import { isDevelopment } from '@/hooks/useCryptoAuth';
 import { lazy, Suspense } from 'react';
 import '@/utils/sandboxBootstrap';
@@ -62,6 +63,7 @@ function App() {
     <ErrorBoundary>
       <HelmetProvider>
         <QueryClientProvider client={queryClient}>
+          <ShopAnnouncementBar />
           <Switch>
             {/* Public routes */}
             <Route path="/">

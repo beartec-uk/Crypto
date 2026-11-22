@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import fs from 'fs'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import wasm from 'vite-plugin-wasm'
@@ -9,6 +10,50 @@ import topLevelAwait from 'vite-plugin-top-level-await'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+
+/**
+ * Emits dist/shop.html: the built index.html with /shop's title, description and
+ * Open Graph / Twitter tags baked in, so link previews (X, WhatsApp, Slack, which
+ * don't run JS) show the shop. vercel.json rewrites /shop to it; the SPA is unchanged.
+ */
+const SHOP_META = {
+  title: 'BearTec Shop — tees, hoodies, caps & stickers',
+  description: 'Official BearTec merch. Printed and shipped in the UK.',
+  url: 'https://www.beartec.uk/shop',
+  image: 'https://cdn.shopify.com/s/files/1/1116/3110/6373/files/unisex-staple-t-shirt-black-front-6b0293bdcbdcf.jpg',
+}
+function shopMetaPage() {
+  return {
+    name: 'beartec-shop-meta-page',
+    apply: 'build' as const,
+    closeBundle() {
+      const outDir = path.resolve(__dirname, 'dist')
+      const src = path.join(outDir, 'index.html')
+      if (!fs.existsSync(src)) return
+      const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
+      const m = SHOP_META
+      const tags = [
+        `<link rel="canonical" href="${m.url}" />`,
+        `<meta property="og:type" content="website" />`,
+        `<meta property="og:site_name" content="BearTec" />`,
+        `<meta property="og:title" content="${esc(m.title)}" />`,
+        `<meta property="og:description" content="${esc(m.description)}" />`,
+        `<meta property="og:url" content="${m.url}" />`,
+        `<meta property="og:image" content="${m.image}" />`,
+        `<meta name="twitter:card" content="summary_large_image" />`,
+        `<meta name="twitter:title" content="${esc(m.title)}" />`,
+        `<meta name="twitter:description" content="${esc(m.description)}" />`,
+        `<meta name="twitter:image" content="${m.image}" />`,
+      ].join('\n    ')
+      const html = fs
+        .readFileSync(src, 'utf8')
+        .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(m.title)}</title>`)
+        .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${esc(m.description)}" />`)
+        .replace('</head>', `    ${tags}\n  </head>`)
+      fs.writeFileSync(path.join(outDir, 'shop.html'), html)
+    },
+  }
+}
 
 export default defineConfig({
   plugins: [
@@ -28,6 +73,7 @@ export default defineConfig({
       gzipSize: true,
       brotliSize: true,
     }),
+    shopMetaPage(),
   ],
 
   root: 'client',

@@ -40,6 +40,9 @@ export function MarketingHeader({ overlay = false }: { overlay?: boolean }) {
             >
               <ShoppingBag className="h-4 w-4" aria-hidden="true" />
               Shop
+              <span className="rounded-full bg-[#00c4b4] px-1.5 py-px text-[10px] font-bold uppercase leading-4 tracking-wide text-black">
+                New
+              </span>
             </a>
           </Link>
         </div>
