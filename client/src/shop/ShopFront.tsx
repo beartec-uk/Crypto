@@ -15,6 +15,8 @@ import './shop.css';
 
 type Level = 0 | 1 | 2;
 const LEVEL_NAMES = ['Category', 'Style', 'Colour & size'] as const;
+const LEVEL_SHORT = ['Category', 'Style', 'Colour'] as const;
+const HINT_KEY = 'bt-shop-swipe-learnt';
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(
@@ -90,6 +92,13 @@ export default function ShopFront({ theme }: { theme: ShopTheme }) {
   const [checkoutState, setCheckoutState] = useState<{ busy: boolean; error?: string }>({ busy: false });
   const [announce, setAnnounce] = useState('');
   const basket = useBasket(theme.id);
+  const [showSwipeHint, setShowSwipeHint] = useState(() => {
+    try {
+      return localStorage.getItem(HINT_KEY) !== '1';
+    } catch {
+      return true;
+    }
+  });
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -190,6 +199,12 @@ export default function ShopFront({ theme }: { theme: ShopTheme }) {
       if (l === cur) return;
       setDir(l > cur ? 'down' : 'up');
       setLevel(l);
+      setShowSwipeHint(false);
+      try {
+        localStorage.setItem(HINT_KEY, '1');
+      } catch {
+        /* ignore */
+      }
       if (!reduced) {
         try {
           navigator.vibrate?.(l > cur ? 10 : 6);
@@ -454,6 +469,55 @@ export default function ShopFront({ theme }: { theme: ShopTheme }) {
         </ol>
       </nav>
 
+      <nav className="sf-rail" aria-label="Move between wheels" data-no-swipe>
+        <button
+          type="button"
+          className="sf-rail-btn is-up"
+          onClick={back}
+          disabled={level === 0}
+          aria-label={level > 0 ? `Back to ${LEVEL_NAMES[level - 1]}` : 'Already at the first wheel'}
+        >
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span className="sf-rail-label">{level > 0 ? `↑ ${LEVEL_SHORT[level - 1]}` : ''}</span>
+        </button>
+        <ol className="sf-rail-steps">
+          {LEVEL_NAMES.map((name, i) => (
+            <li key={name}>
+              <button
+                type="button"
+                className={`sf-rail-step${level === i ? ' is-on' : ''}${i < level ? ' is-done' : ''}`}
+                aria-current={level === i ? 'step' : undefined}
+                aria-label={`Wheel ${i + 1}: ${name}`}
+                disabled={i > level + 1}
+                onClick={() => goTo(i as Level)}
+              >
+                {i + 1}
+              </button>
+            </li>
+          ))}
+        </ol>
+        <button
+          type="button"
+          className={`sf-rail-btn is-down${showSwipeHint && level < 2 ? ' is-hinting' : ''}`}
+          onClick={next}
+          disabled={level === 2}
+          aria-label={level < 2 ? `Next: ${LEVEL_NAMES[level + 1]}` : 'Already at the last wheel'}
+        >
+          <span className="sf-rail-label">{level < 2 ? `${LEVEL_SHORT[level + 1]} ↓` : ''}</span>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        {showSwipeHint && level < 2 ? (
+          <span className="sf-swipe-hint" aria-hidden="true">
+            <span className="sf-swipe-hint-arrows">⌃<br />⌃</span>
+            {finePointer ? 'Scroll down' : 'Swipe up'}
+          </span>
+        ) : null}
+      </nav>
+
       <main className="sf-main">
         <section className="sf-stage" aria-label="Preview">
           {preview ? (
@@ -474,23 +538,6 @@ export default function ShopFront({ theme }: { theme: ShopTheme }) {
         </section>
 
         <section className="sf-dock" aria-label={`${LEVEL_NAMES[level]} wheel`}>
-          <div className="sf-levels" role="tablist" aria-label="Wheels">
-            {LEVEL_NAMES.map((name, i) => (
-              <button
-                key={name}
-                type="button"
-                role="tab"
-                aria-selected={level === i}
-                className={`sf-level-dot${level === i ? ' is-on' : ''}${i < level ? ' is-done' : ''}`}
-                disabled={i > level + 1}
-                onClick={() => goTo(i as Level)}
-              >
-                <span className="sf-level-num">{i + 1}</span>
-                <span className="sf-level-name">{name}</span>
-              </button>
-            ))}
-          </div>
-
           {catalogue && category ? (
             <div key={level === 0 ? 'l0' : level === 1 ? `l1-${catIdx}` : `l2-${catIdx}-${prodIdx}`} className={`sf-wheel-wrap is-${dir}`}>
               {level === 0 ? (
