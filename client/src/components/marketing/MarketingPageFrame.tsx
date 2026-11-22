@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 BEARTEC (Scott Reynolds). All rights reserved.
 import type { ReactNode } from 'react';
-import { Link } from 'wouter';
 import { MarketingFooter } from './MarketingFooter';
+import { MarketingHeader } from './MarketingHeader';
 
 export function MarketingPageFrame({
   children,
@@ -12,13 +12,7 @@ export function MarketingPageFrame({
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-[#0e0e0e] text-white">
-      <header className="border-b border-white/10 px-6 py-4">
-        <Link href="/">
-          <a className="text-lg font-semibold tracking-tight text-white hover:text-[#00c4b4]">
-            BearTec
-          </a>
-        </Link>
-      </header>
+      <MarketingHeader />
       <main className={`mx-auto w-full flex-1 px-6 py-12 ${wide ? 'max-w-5xl' : 'max-w-2xl'}`}>
         {children}
       </main>
