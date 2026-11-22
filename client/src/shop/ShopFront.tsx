@@ -76,6 +76,7 @@ function CrossfadeImage({ src, alt, reduced }: { src: string; alt: string; reduc
 
 export default function ShopFront({ theme }: { theme: ShopTheme }) {
   const reduced = usePrefersReducedMotion();
+  const [finePointer] = useState(() => typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: fine)').matches);
   const [catalogue, setCatalogue] = useState<ShopCatalogue | null>(null);
   const [level, setLevel] = useState<Level>(0);
   const [dir, setDir] = useState<'down' | 'up'>('down');
@@ -378,7 +379,9 @@ export default function ShopFront({ theme }: { theme: ShopTheme }) {
     '--sf-tint': preview?.tint ?? theme.vars.accent,
   } as React.CSSProperties;
 
-  const hint = level === 0 ? theme.copy.categoryHint : level === 1 ? theme.copy.productHint : theme.copy.variantHint;
+  const gesture = finePointer ? 'Scroll down' : 'Swipe up';
+  const hint =
+    level === 0 ? `${gesture} ${theme.copy.categoryHint}` : level === 1 ? `${gesture} ${theme.copy.productHint}` : theme.copy.variantHint;
 
   return (
     <div

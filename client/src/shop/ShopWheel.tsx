@@ -229,8 +229,9 @@ export default function ShopWheel({
     const recent = e.timeStamp - last.t < 80;
     const vPx = recent ? (last.x - first.x) / dt : 0; // px/ms
     const vItems = (-vPx * 1000) / pxPerItem; // items/s
-    const projected = posRef.current + vItems * 0.2;
-    animateTo(projected, clamp(vItems, -40, 40));
+    const capped = clamp(vItems, -24, 24);
+    const projected = posRef.current + capped * 0.16;
+    animateTo(projected, capped);
   };
 
   // ---- horizontal wheel / trackpad (vertical is left to the parent) ----
@@ -383,7 +384,6 @@ export default function ShopWheel({
             {items.map((it, i) => (
               <span key={it.id} className={`sfw-tick${i === centre ? ' is-on' : ''}`} />
             ))}
-            <span className="sfw-cursor" style={{ left: `${(clamp(pos, 0, max) / max) * 100}%` }} />
           </div>
         </>
       ) : null}

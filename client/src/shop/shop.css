@@ -65,7 +65,7 @@
 @keyframes sf-fade-out { from { opacity: 1; } to { opacity: 0; } }
 
 .sf-info { text-align: center; min-height: 78px; }
-.sf-title { margin: 0; font-size: clamp(19px, 5.2vw, 26px); font-weight: 650; letter-spacing: -0.01em; line-height: 1.15; }
+.sf-title { margin: 0; color: var(--sf-text); font-size: clamp(19px, 5.2vw, 26px); font-weight: 650; letter-spacing: -0.01em; line-height: 1.15; }
 .sf-sub { margin: 3px 0 0; font-size: 13px; color: var(--sf-muted); }
 .sf-price { margin: 6px 0 0; font-size: 18px; font-weight: 700; color: var(--sf-accent); font-variant-numeric: tabular-nums; }
 
@@ -142,7 +142,6 @@
 .sfw-rail { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); width: min(60%, 220px); height: 12px; display: flex; justify-content: space-between; align-items: center; }
 .sfw-tick { width: 2px; height: 6px; border-radius: 2px; background: var(--sf-border); transition: height 160ms, background 160ms; }
 .sfw-tick.is-on { height: 10px; background: var(--sf-accent); }
-.sfw-cursor { position: absolute; top: 50%; width: 14px; height: 3px; margin-left: -7px; border-radius: 3px; background: var(--sf-accent-2); box-shadow: 0 0 10px var(--sf-glow); transform: translateY(-50%); opacity: 0.55; }
 
 /* ---------- basket drawer ---------- */
 .sf-drawer-backdrop { position: fixed; inset: 0; z-index: 500; background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; animation: sf-fade-in 200ms ease both; touch-action: auto; }

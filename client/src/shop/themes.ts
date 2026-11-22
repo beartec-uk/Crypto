@@ -18,6 +18,7 @@ export interface ShopTheme {
     pageTitle: string;
     metaDescription: string;
     intro: string;
+    /** Shown after "Swipe up" (touch) or "Scroll down" (mouse). */
     categoryHint: string;
     productHint: string;
     variantHint: string;
@@ -43,14 +44,14 @@ export const BEARTEC_THEME: ShopTheme = {
   id: 'beartec',
   brand: 'BearTec',
   collectionHandle: 'beartec',
-  logo: { src: '/beartec-logo.png', alt: 'BearTec', height: 26 },
+  logo: { src: '/shop-assets/beartec-wordmark.webp', alt: 'BearTec', height: 30 },
   homeHref: '/',
   copy: {
     pageTitle: 'BearTec Shop — tees, hoodies, caps & stickers',
     metaDescription: 'Official BearTec merch. Printed and shipped in the UK.',
     intro: 'Official merch',
-    categoryHint: 'Swipe up for styles',
-    productHint: 'Swipe up to pick colour & size',
+    categoryHint: 'for styles',
+    productHint: 'to pick colour & size',
     variantHint: 'Pick a colour, then your size',
   },
   vars: {
@@ -73,14 +74,14 @@ export const FALCON_THEME: ShopTheme = {
   id: 'falcon',
   brand: 'Falcon PL',
   collectionHandle: 'falcon',
-  logo: { src: '/shop-mock/falcon-coin.webp', alt: 'Falcon PL', height: 34, round: true },
+  logo: { src: '/shop-assets/falcon-coin.webp', alt: 'Falcon PL', height: 34, round: true },
   homeHref: 'https://falcon-fpl.com',
   copy: {
     pageTitle: 'Falcon PL Shop — coin merch',
     metaDescription: 'Falcon PL coin merch: tees, hoodies, caps and stickers.',
     intro: 'Coin collection',
-    categoryHint: 'Swipe up for styles',
-    productHint: 'Swipe up to pick colour & size',
+    categoryHint: 'for styles',
+    productHint: 'to pick colour & size',
     variantHint: 'Pick a colour, then your size',
   },
   vars: {
