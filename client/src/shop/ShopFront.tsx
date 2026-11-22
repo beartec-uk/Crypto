@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SHOP_CATEGORIES, formatPrice, type ShopCatalogue, type ShopProduct } from '@shared/shop/types';
 import ShopWheel, { type WheelItem } from './ShopWheel';
 import { loadCatalogue, startCheckout } from './api';
+import { withCheckoutReturn } from './checkoutReturn';
 import { useBasket } from './useBasket';
 import type { ShopTheme } from './themes';
 import './shop.css';
@@ -322,7 +323,7 @@ export default function ShopFront({ theme }: { theme: ShopTheme }) {
     setCheckoutState({ busy: true });
     try {
       const url = await startCheckout(basket.lines.map((l) => ({ merchandiseId: l.variantId, quantity: l.quantity })));
-      window.location.assign(url);
+      window.location.assign(withCheckoutReturn(url, 'beartec'));
     } catch (err) {
       setCheckoutState({ busy: false, error: err instanceof Error ? err.message : 'Could not start checkout' });
     }
