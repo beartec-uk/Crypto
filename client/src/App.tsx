@@ -34,6 +34,7 @@ const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 const AdminAnalytics = lazy(() => import('@/pages/AdminAnalytics'));
 const NotFound = lazy(() => import('@/pages/not-found'));
 const ChartPage = lazy(() => import('@/pages/ChartPage'));
+const Shop = lazy(() => import('@/pages/Shop'));
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   return (
@@ -81,6 +82,16 @@ function App() {
             <Route path="/cryptologin">
               <Suspense fallback={<LoadingSpinner message="Loading..." />}>
                 <CryptoLogin />
+              </Suspense>
+            </Route>
+            <Route path="/shop/falcon-preview">
+              <Suspense fallback={<LoadingSpinner message="Loading shop..." />}>
+                <Shop themeId="falcon" />
+              </Suspense>
+            </Route>
+            <Route path="/shop">
+              <Suspense fallback={<LoadingSpinner message="Loading shop..." />}>
+                <Shop />
               </Suspense>
             </Route>
             <Route path="/pricing">
