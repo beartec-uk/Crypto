@@ -410,7 +410,12 @@ export default function ShopFront({ theme }: { theme: ShopTheme }) {
       data-level={level}
     >
       <header className="sf-header">
-        <a className="sf-brand" href={theme.homeHref} aria-label={`${theme.brand} home`}>
+        <a className="sf-brand" href={theme.homeHref} aria-label={`Back to ${theme.brand} home`} title={`Back to ${theme.brand}`}>
+          <span className="sf-brand-back" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20">
+              <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
           <img
             src={theme.logo.src}
             alt={theme.logo.alt}

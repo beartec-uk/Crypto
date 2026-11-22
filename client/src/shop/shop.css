@@ -26,6 +26,8 @@
 .sf-header { height: 56px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
 .sf-brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
 .sf-brand img { width: auto; display: block; }
+.sf-brand-back { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; margin-left: -6px; border-radius: 50%; color: var(--sf-accent); border: 1px solid var(--sf-border); transition: background 0.15s; }
+.sf-brand:hover .sf-brand-back { background: var(--sf-surface-hi, rgba(255,255,255,0.08)); }
 .sf-brand img.is-round { border-radius: 50%; box-shadow: 0 0 18px var(--sf-glow); }
 .sf-brand-shop { font-size: 13px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--sf-muted); padding-left: 10px; border-left: 1px solid var(--sf-border); }
 .sf-header-right { display: flex; align-items: center; gap: 10px; }

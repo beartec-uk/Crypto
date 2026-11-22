@@ -5,6 +5,7 @@ import { Link } from 'wouter';
 import videoFile from '@assets/grok_video_2025-11-13-19-48-28_1763063433278.mp4';
 import { MarketingAuthCtas } from '@/components/marketing/MarketingAuthCtas';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
+import { MarketingHeader } from '@/components/marketing/MarketingHeader';
 
 const FREE_CARDS = [
   {
@@ -154,6 +155,7 @@ export default function CryptoLanding() {
         data-testid="marketing-hero"
         aria-label="BearTec"
       >
+        <MarketingHeader overlay />
         <video
           ref={videoRef}
           className="absolute inset-0 h-full w-full object-cover opacity-50"
