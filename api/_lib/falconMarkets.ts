@@ -7,7 +7,7 @@
  * These are TESTNET markets; tokens have no monetary value.
  */
 
-export type FalconMarketId = 'USDC-FPL' | 'BTC4-FPL';
+export type FalconMarketId = 'USDC-FPL' | 'BTC4-FPL' | 'ETH-FPL';
 
 export interface FalconMarket {
   id: FalconMarketId;
@@ -55,23 +55,38 @@ export const FALCON_MARKETS: Record<FalconMarketId, FalconMarket> = {
     networkId: 2300,
     testnet: true,
   },
+  'ETH-FPL': {
+    id: 'ETH-FPL',
+    symbol: 'ETH-FPL',
+    label: 'ETH/FPL (Falcon testnet 2300)',
+    base: 'ETH',
+    quote: 'FPL',
+    baseDecimals: 18, // coin_scale("ETH") = 1e18
+    // Fill.price is already FPL raw per 1 whole ETH (quoteDecimals=0); dividing by 1e18 would underflow chart display.
+    priceScale: 1,
+    quoteDecimals: 0,
+    networkId: 2300,
+    testnet: true,
+  },
 };
 
 export const FALCON_MARKET_LIST: FalconMarket[] = [
   FALCON_MARKETS['USDC-FPL'],
   FALCON_MARKETS['BTC4-FPL'],
+  FALCON_MARKETS['ETH-FPL'],
 ];
 
 export function isFalconSymbol(symbol: string | undefined | null): symbol is FalconMarketId {
   if (!symbol) return false;
   const s = String(symbol).toUpperCase();
-  return s === 'USDC-FPL' || s === 'BTC4-FPL' || s === 'USDC' || s === 'BTC4';
+  return s === 'USDC-FPL' || s === 'BTC4-FPL' || s === 'ETH-FPL' || s === 'USDC' || s === 'BTC4' || s === 'ETH';
 }
 
 export function normalizeFalconSymbol(symbol: string): FalconMarketId | null {
   const s = String(symbol || '').toUpperCase().trim();
   if (s === 'USDC' || s === 'USDC-FPL') return 'USDC-FPL';
   if (s === 'BTC4' || s === 'BTC4-FPL') return 'BTC4-FPL';
+  if (s === 'ETH' || s === 'ETH-FPL') return 'ETH-FPL';
   return null;
 }
 

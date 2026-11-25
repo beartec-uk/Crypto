@@ -38,7 +38,7 @@ from typing import Any
 from candle_lib import assign_window_positions
 
 RPC_URL = os.environ.get("FALCON_CLOUD_RPC_URL", "https://rpc.falcon-fpl.com/v1/rpc")
-DEFAULT_PAIRS = ("BTC4", "USDC")  # allowlisted known markets only
+DEFAULT_PAIRS = ("BTC4", "USDC", "ETH")  # allowlisted known markets only
 MAX_LIMIT = 200
 DEFAULT_DB = "/var/lib/falcon-fills-store/fills.sqlite"
 SCHEMA_VERSION = 1
@@ -573,7 +573,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument(
         "--pairs",
         default=os.environ.get("FALCON_FILLS_PAIRS", ",".join(DEFAULT_PAIRS)),
-        help="Comma-separated allowlisted pairs (default BTC4,USDC)",
+        help="Comma-separated allowlisted pairs (default BTC4,USDC,ETH)",
     )
     p.add_argument("--keep-snapshots", type=int, default=int(os.environ.get("FALCON_FILLS_SNAPSHOTS", "120")))
     p.add_argument("--loop-seconds", type=float, default=float(os.environ.get("FALCON_FILLS_INTERVAL_SEC", "0")))

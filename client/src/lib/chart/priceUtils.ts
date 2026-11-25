@@ -26,7 +26,7 @@ export const formatMALabel = (period: number, timeframe: string): string => {
  */
 export const formatTickerDisplay = (ticker: string): string => {
   const upper = String(ticker || '').toUpperCase();
-  if (upper === 'USDC-FPL' || upper === 'BTC4-FPL') {
+  if (upper === 'USDC-FPL' || upper === 'BTC4-FPL' || upper === 'ETH-FPL') {
     return `${upper.split('-')[0]}/FPL`;
   }
   return ticker.replace('USDT', '/USDT');
