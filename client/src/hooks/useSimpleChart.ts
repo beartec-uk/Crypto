@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { createChart, IChartApi, ISeriesApi, ColorType, CandlestickSeries } from 'lightweight-charts';
 import { convertTimeframe } from '@/lib/utils/binance';
+import { falconSafeTimeframe, isFalconTicker } from '@/lib/tickerUtils';
 
 interface UseSimpleChartProps {
   containerRef: React.RefObject<HTMLDivElement>;
@@ -111,6 +112,27 @@ export function useSimpleChart({ containerRef, symbol, timeframe }: UseSimpleCha
 
     const fetchData = async () => {
       try {
+        if (isFalconTicker(symbol)) {
+          const tf = falconSafeTimeframe(timeframe);
+          const response = await fetch(
+            `/api/crypto/falcon/candles?pair=${encodeURIComponent(symbol)}&timeframe=${encodeURIComponent(tf)}&limit=1000`,
+          );
+          if (!response.ok) {
+            console.error(`Failed to fetch Falcon chart data: ${response.status} ${response.statusText}`);
+            return;
+          }
+          const payload = await response.json();
+          const list = Array.isArray(payload.candles) ? payload.candles : [];
+          const chartData = list.map((c: any) => ({
+            time: Number(c.time) as any,
+            open: Number(c.open),
+            high: Number(c.high),
+            low: Number(c.low),
+            close: Number(c.close),
+          }));
+          candleSeriesRef.current?.setData(chartData);
+          return;
+        }
         const binanceTimeframe = convertTimeframe(timeframe);
         const targetCandles = getTargetCandleCount(timeframe);
         const allCandles: any[] = [];

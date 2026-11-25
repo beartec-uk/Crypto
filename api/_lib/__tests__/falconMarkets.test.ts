@@ -23,13 +23,14 @@ describe('falconMarkets', () => {
   });
 
   it('uses chain-validated scales', () => {
-    expect(FALCON_MARKETS['BTC4-FPL'].priceScale).toBe(100_000_000);
+    expect(FALCON_MARKETS['BTC4-FPL'].priceScale).toBe(1);
     expect(FALCON_MARKETS['BTC4-FPL'].baseDecimals).toBe(8);
-    expect(FALCON_MARKETS['USDC-FPL'].priceScale).toBe(1_000_000);
+    expect(FALCON_MARKETS['USDC-FPL'].priceScale).toBe(1);
     expect(FALCON_MARKETS['USDC-FPL'].baseDecimals).toBe(6);
     expect(FALCON_MARKETS['ETH-FPL'].priceScale).toBe(1);
     expect(FALCON_MARKETS['ETH-FPL'].baseDecimals).toBe(18);
-    expect(priceRawToNumber(4176926, 100_000_000)).toBeCloseTo(0.04176926);
+    expect(priceRawToNumber(4070000, 1)).toBe(4070000);
+    expect(priceRawToNumber(82, 1)).toBe(82);
     expect(priceRawToNumber(51847, 1)).toBe(51847);
     expect(baseRawToNumber(23, 8)).toBeCloseTo(0.00000023);
     expect(baseRawToNumber('1000000000000000000', 18)).toBe(1);

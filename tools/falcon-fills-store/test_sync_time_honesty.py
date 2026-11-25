@@ -214,6 +214,39 @@ class TestSyncHonesty(unittest.TestCase):
         self.assertEqual(eth["candles"][0]["open"], 51847.0)
         self.assertAlmostEqual(eth["candles"][0]["volume"], 0.5)
 
+
+    def test_btc4_and_usdc_use_unit_price_scale(self):
+        upsert_block_times(
+            self.conn,
+            [{
+                "height": 26,
+                "hash": "scaleobs",
+                "sealed_at": None,
+                "observed_at": "2026-11-06T02:00:00Z",
+            }],
+        )
+        self.conn.execute(
+            """
+            INSERT INTO fills (
+              height, asset, side, price, base, quote, taker, maker,
+              taker_order, maker_order, raw_json, first_seen_at, block_time_unix,
+              dup_seq, time_status
+            ) VALUES
+              (26, 'BTC4', 'buy', '4070000', '100000000', '4070000', 'taker', 'maker', 1, 1, '{}',
+               '2026-11-06T02:00:00Z', NULL, 0, 'untimed'),
+              (26, 'USDC', 'sell', '82', '1000000', '82', 'taker', 'maker', 2, 2, '{}',
+               '2026-11-06T02:00:00Z', NULL, 0, 'untimed')
+            """
+        )
+        self.conn.commit()
+        enrich_fills(self.conn)
+        btc = exports_for_asset(self.conn, "BTC4")[0]
+        usdc = exports_for_asset(self.conn, "USDC")[0]
+        self.assertEqual(btc["candles"][0]["open"], 4070000.0)
+        self.assertAlmostEqual(btc["candles"][0]["volume"], 1.0)
+        self.assertEqual(usdc["candles"][0]["open"], 82.0)
+        self.assertAlmostEqual(usdc["candles"][0]["volume"], 1.0)
+
     def test_observed_refresh_keeps_stored_physics_and_reclassifies(self):
         upsert_block_times(
             self.conn,
