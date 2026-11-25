@@ -185,6 +185,35 @@ class TestSyncHonesty(unittest.TestCase):
         self.assertNotEqual(usdc["coverage"]["timeQuality"], btc["coverage"]["timeQuality"])
         self.assertEqual(self.conn.execute("SELECT COUNT(*) c FROM fills").fetchone()["c"], 2)
 
+    def test_eth_fpl_export_uses_18_decimals_and_unit_price_scale(self):
+        upsert_block_times(
+            self.conn,
+            [{
+                "height": 25,
+                "hash": "ethobs",
+                "sealed_at": None,
+                "observed_at": "2026-11-06T02:00:00Z",
+            }],
+        )
+        self.conn.execute(
+            """
+            INSERT INTO fills (
+              height, asset, side, price, base, quote, taker, maker,
+              taker_order, maker_order, raw_json, first_seen_at, block_time_unix,
+              dup_seq, time_status
+            ) VALUES (25, 'ETH', 'buy', '51847', '500000000000000000', '25923', 'taker', 'maker', 1, 1, '{}',
+                      '2026-11-06T02:00:00Z', NULL, 0, 'untimed')
+            """
+        )
+        self.conn.commit()
+        enrich_fills(self.conn)
+        eth = exports_for_asset(self.conn, "ETH")[0]
+        self.assertEqual(eth["pair"], "ETH-FPL")
+        self.assertEqual(eth["coverage"]["timedFills"], 1)
+        self.assertEqual(len(eth["candles"]), 1)
+        self.assertEqual(eth["candles"][0]["open"], 51847.0)
+        self.assertAlmostEqual(eth["candles"][0]["volume"], 0.5)
+
     def test_observed_refresh_keeps_stored_physics_and_reclassifies(self):
         upsert_block_times(
             self.conn,

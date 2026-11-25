@@ -17,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const pair = normalizeFalconSymbol(q(req.query.pair) || q(req.query.symbol) || '');
   if (!pair) {
-    return res.status(400).json({ error: 'pair must be USDC-FPL or BTC4-FPL' });
+    return res.status(400).json({ error: 'pair must be USDC-FPL, BTC4-FPL, or ETH-FPL' });
   }
   const timeframe = parseFalconTimeframe(q(req.query.timeframe) ?? q(req.query.interval) ?? '');
   if (!timeframe) {

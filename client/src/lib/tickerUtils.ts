@@ -17,13 +17,14 @@ export const DEFAULT_TICKERS: Ticker[] = [
 export const FALCON_TICKERS: Ticker[] = [
   { value: 'USDC-FPL', label: 'USDC/FPL (Falcon testnet 2300)' },
   { value: 'BTC4-FPL', label: 'BTC4/FPL (Falcon testnet 2300)' },
+  { value: 'ETH-FPL', label: 'ETH/FPL (Falcon testnet 2300)' },
 ];
 
 export const FALCON_DEFAULT_TICKER = 'USDC-FPL';
 
 export function isFalconTicker(value: string): boolean {
   const v = String(value || '').toUpperCase();
-  return v === 'USDC-FPL' || v === 'BTC4-FPL';
+  return v === 'USDC-FPL' || v === 'BTC4-FPL' || v === 'ETH-FPL';
 }
 
 
