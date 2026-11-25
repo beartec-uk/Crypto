@@ -57,8 +57,8 @@ INGEST_URL = os.environ.get(
 )
 # USDC-FPL is the default market. BTC4 is selectable. Never copy one into the other.
 MARKETS = {
-    "USDC": {"pair": "USDC-FPL", "base_decimals": 6, "price_scale": 1_000_000},
-    "BTC4": {"pair": "BTC4-FPL", "base_decimals": 8, "price_scale": 100_000_000},
+    "USDC": {"pair": "USDC-FPL", "base_decimals": 6, "price_scale": 1},
+    "BTC4": {"pair": "BTC4-FPL", "base_decimals": 8, "price_scale": 1},
     "ETH": {"pair": "ETH-FPL", "base_decimals": 18, "price_scale": 1},
 }
 TIMEFRAMES = ("1m", "5m", "15m", "1h")

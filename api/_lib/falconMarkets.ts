@@ -37,8 +37,9 @@ export const FALCON_MARKETS: Record<FalconMarketId, FalconMarket> = {
     label: 'USDC/FPL (Falcon testnet 2300)',
     base: 'USDC',
     quote: 'FPL',
-    baseDecimals: 6, // matches price_scale 1e6
-    priceScale: 1_000_000,
+    baseDecimals: 6, // coin_scale("USDC") = 1e6 (scales base volume)
+    // Fill.price is already FPL raw per 1 whole USDC (quoteDecimals=0).
+    priceScale: 1,
     quoteDecimals: 0,
     networkId: 2300,
     testnet: true,
@@ -49,8 +50,9 @@ export const FALCON_MARKETS: Record<FalconMarketId, FalconMarket> = {
     label: 'BTC4/FPL (Falcon testnet 2300)',
     base: 'BTC4',
     quote: 'FPL',
-    baseDecimals: 8, // explorer amount.decimals=8; price_scale 1e8
-    priceScale: 100_000_000,
+    baseDecimals: 8, // explorer amount.decimals=8 (scales base volume)
+    // Fill.price is already FPL raw per 1 whole BTC4 (quoteDecimals=0).
+    priceScale: 1,
     quoteDecimals: 0,
     networkId: 2300,
     testnet: true,

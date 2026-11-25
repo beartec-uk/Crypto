@@ -65,8 +65,9 @@ Retired and never presented as verified time:
 
 ## Markets
 - Default market: `USDC-FPL`. `BTC4-FPL` is selectable.
-- USDC scale: base decimals 6, price scale 1_000_000.
-- BTC4 scale: base decimals 8, price scale 100_000_000.
+- USDC scale: base decimals 6, price scale 1 (Fill.price is FPL raw per 1 whole USDC).
+- BTC4 scale: base decimals 8, price scale 1 (Fill.price is FPL raw per 1 whole BTC4).
+- ETH scale: base decimals 18, price scale 1 (Fill.price is FPL raw per 1 whole ETH).
 - Sync exports each pair from its own fills. It does not copy BTC4 candles into an empty USDC market.
 
 ## Limits

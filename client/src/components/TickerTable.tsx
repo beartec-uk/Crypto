@@ -11,6 +11,7 @@ import { BiasBadge } from '@/components/BiasBadge';
 import { convertTimeframe } from '@/lib/utils/binance';
 import { formatTickerDisplay } from '@/lib/chart/priceUtils';
 import { falconSafeTimeframe, isFalconTicker } from '@/lib/tickerUtils';
+import { falconChangePercent } from '@/lib/falconWatchlist';
 import type { Bias } from '@/types/candle';
 
 interface TickerData {
@@ -22,10 +23,6 @@ interface TickerData {
 }
 
 
-function candleTimeSec(time: number): number {
-  return time > 1e12 ? time / 1000 : time;
-}
-
 function parseFalconWatchlistCandles(raw: any[]) {
   return raw.map((c) => ({
     time: Number(c.time),
@@ -35,19 +32,6 @@ function parseFalconWatchlistCandles(raw: any[]) {
     close: Number(c.close),
     volume: Number(c.volume ?? 0),
   })).filter((c) => Number.isFinite(c.close));
-}
-
-function falconChangePercent(parsed: Array<{ time: number; close: number }>): number {
-  if (parsed.length < 2) return 0;
-  const last = parsed[parsed.length - 1];
-  const cutoff = candleTimeSec(last.time) - 24 * 3600;
-  let ref = parsed[0];
-  for (const candle of parsed) {
-    if (candleTimeSec(candle.time) <= cutoff) ref = candle;
-    else break;
-  }
-  if (!ref.close) return 0;
-  return ((last.close - ref.close) / ref.close) * 100;
 }
 
 async function fetchFalconWatchlistRow(
