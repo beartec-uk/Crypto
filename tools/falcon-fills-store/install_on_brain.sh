@@ -10,6 +10,7 @@ install -d -o root -g root -m 755 /usr/local/lib/falcon-fills-store
 install -d -o root -g root -m 755 /usr/local/share/falcon-fills-store
 install -m 755 "$SRC/collector.py" /usr/local/lib/falcon-fills-store/collector.py
 install -m 755 "$SRC/sync_candles.py" /usr/local/lib/falcon-fills-store/sync_candles.py
+install -m 755 "$SRC/serve.py" /usr/local/lib/falcon-fills-store/serve.py
 install -m 644 "$SRC/candle_lib.py" /usr/local/lib/falcon-fills-store/candle_lib.py
 install -m 755 "$SRC/backup.sh" /usr/local/lib/falcon-fills-store/backup.sh
 install -m 644 "$SRC/README.md" /usr/local/share/falcon-fills-store/README.md
@@ -17,6 +18,7 @@ install -m 644 "$SRC/systemd/falcon-fills-store.service" /etc/systemd/system/fal
 install -m 644 "$SRC/systemd/falcon-fills-store.timer" /etc/systemd/system/falcon-fills-store.timer
 install -m 644 "$SRC/systemd/falcon-fills-backup.service" /etc/systemd/system/falcon-fills-backup.service
 install -m 644 "$SRC/systemd/falcon-fills-backup.timer" /etc/systemd/system/falcon-fills-backup.timer
+install -m 644 "$SRC/systemd/falcon-fills-market.service" /etc/systemd/system/falcon-fills-market.service
 # env file: create empty placeholder if missing (key installed separately)
 if [ ! -f /etc/falcon-fills-store/env ]; then
   umask 027
@@ -27,6 +29,11 @@ fi
 systemctl daemon-reload
 systemctl enable --now falcon-fills-store.timer
 systemctl enable --now falcon-fills-backup.timer
+if [ -f /etc/falcon-fills-store/market.env ]; then
+  systemctl enable --now falcon-fills-market.service
+else
+  echo "market_api_skipped: create /etc/falcon-fills-store/market.env (FPL_MARKET_TOKEN, FPL_MARKET_BIND) then enable falcon-fills-market"
+fi
 echo "install_ok"
 systemctl is-active falcon-fills-store.timer
 systemctl is-enabled falcon-fills-store.timer

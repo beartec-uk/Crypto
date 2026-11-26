@@ -62,6 +62,7 @@ MARKETS = {
     "ETH": {"pair": "ETH-FPL", "base_decimals": 18, "price_scale": 1},
 }
 TIMEFRAMES = ("1m", "5m", "15m", "1h")
+LOCAL_TIMEFRAMES = TIMEFRAMES + ("4h", "1d")
 INGEST_CANDLE_LIMIT = 5000
 RING_LIMIT_NOTE = (
     "RPC fpl_fills returns at most RECENT_FILLS=200; not full history. "
@@ -445,7 +446,7 @@ def load_timed_fills(conn: sqlite3.Connection, asset: str) -> list[TimedFill]:
     return out
 
 
-def exports_for_asset(conn: sqlite3.Connection, asset: str) -> list[dict[str, Any]]:
+def exports_for_asset(conn: sqlite3.Connection, asset: str, timeframes: tuple[str, ...] | None = None) -> list[dict[str, Any]]:
     """Per-timeframe payloads. Estimated observer candles when fills have arrival times.
 
     An empty USDC book is returned as USDC-FPL with its own untimed count.
@@ -460,7 +461,8 @@ def exports_for_asset(conn: sqlite3.Connection, asset: str) -> list[dict[str, An
     summary = summarize_classifications(_classifications_for_asset(conn, asset))
     evidence = summary["evidenceCounts"]
     payloads: list[dict[str, Any]] = []
-    for timeframe in TIMEFRAMES:
+    timeframes = timeframes or TIMEFRAMES
+    for timeframe in timeframes:
         candles = build_candles(timed, timeframe)
         gaps = coverage_gaps(candles, timeframe) if candles else []
         coverage = {
@@ -564,6 +566,57 @@ def _store_export_meta(conn: sqlite3.Connection, coverage: dict, candle_count: i
     )
 
 
+
+def _ensure_candles_table(conn: sqlite3.Connection) -> None:
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS candles (
+          pair TEXT NOT NULL,
+          timeframe TEXT NOT NULL,
+          time INTEGER NOT NULL,
+          open REAL NOT NULL,
+          high REAL NOT NULL,
+          low REAL NOT NULL,
+          close REAL NOT NULL,
+          volume REAL NOT NULL,
+          fill_count INTEGER,
+          time_quality TEXT,
+          time_source TEXT,
+          PRIMARY KEY (pair, timeframe, time)
+        )
+        """
+    )
+    conn.execute("CREATE INDEX IF NOT EXISTS candles_pair_tf_time ON candles (pair, timeframe, time)")
+
+
+def upsert_candles(conn: sqlite3.Connection, pair: str, timeframe: str, candles: list[dict]) -> int:
+    """Replace the cached candle series for one pair/timeframe. Used by the market API."""
+    _ensure_candles_table(conn)
+    conn.execute("DELETE FROM candles WHERE pair=? AND timeframe=?", (pair, timeframe))
+    rows = [
+        (
+            pair,
+            timeframe,
+            int(c["time"]),
+            float(c["open"]),
+            float(c["high"]),
+            float(c["low"]),
+            float(c["close"]),
+            float(c["volume"]),
+            int(c.get("fillCount") or 0),
+            c.get("timeQuality"),
+            c.get("timeSource"),
+        )
+        for c in (candles or [])
+    ]
+    conn.executemany(
+        """INSERT INTO candles(pair, timeframe, time, open, high, low, close, volume, fill_count, time_quality, time_source)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+        rows,
+    )
+    return len(rows)
+
+
 def main() -> int:
     db = Path(os.environ.get("FALCON_FILLS_DB", DEFAULT_DB))
     token = os.environ.get("FALCON_BRAIN_INGEST_TOKEN", "").strip()
@@ -575,11 +628,14 @@ def main() -> int:
         summary["blocks"] = upsert_block_times(conn, items)
         summary["enriched"] = enrich_fills(conn)["enriched"]
         for asset, meta in MARKETS.items():
-            for payload in exports_for_asset(conn, asset):
+            for payload in exports_for_asset(conn, asset, LOCAL_TIMEFRAMES):
                 coverage = dict(payload["coverage"])
                 coverage["timeframe"] = payload["timeframe"]
                 _store_export_meta(conn, coverage, len(payload["candles"]))
+                upsert_candles(conn, payload["pair"], payload["timeframe"], payload["candles"])
                 conn.commit()
+                if payload["timeframe"] not in TIMEFRAMES:
+                    continue
                 if not token:
                     summary["pushes"].append(
                         {

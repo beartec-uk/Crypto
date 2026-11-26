@@ -1,0 +1,34 @@
+[Unit]
+Description=Falcon Cloud market data API (read-only SQLite for fpl-gateway)
+Documentation=file:///usr/local/share/falcon-fills-store/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=falcon-fills
+Group=falcon-fills
+WorkingDirectory=/var/lib/falcon-fills-store
+EnvironmentFile=-/etc/falcon-fills-store/env
+EnvironmentFile=-/etc/falcon-fills-store/market.env
+ExecStart=/usr/bin/python3 /usr/local/lib/falcon-fills-store/serve.py
+Restart=on-failure
+RestartSec=5
+Nice=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/var/lib/falcon-fills-store
+# WAL reads may need the shm/wal files; directory is already readable.
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictRealtime=true
+LockPersonality=true
+MemoryMax=128M
+CPUQuota=15%
+
+[Install]
+WantedBy=multi-user.target
