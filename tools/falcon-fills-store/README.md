@@ -57,3 +57,14 @@ sudo systemctl start falcon-fills-backup.service
 - `block_times` is still keyed by height. That join does not admit verified UTC.
 - `sync_candles.py` can POST 1m/5m/15m/1h coverage to `/api/crypto/falcon/ingest`. Published candle arrays are empty while verified UTC is disabled. USDC-FPL is exported on its own; empty USDC is not replaced with BTC4. Quote is FPL.
 - Dedup unique key includes `dup_seq` so identical full-field fills in one ring snapshot are preserved; raw snapshots remain evidence.
+
+
+## Market data API (Falcon Cloud gateway)
+
+`serve.py` is a read-only HTTP API used by `fpl-gateway` for `fpl_pairs`, `fpl_ticker`, `fpl_candles` and longer `fpl_fills` history. It reads this SQLite database and does not call the chain.
+
+- Unit: `falcon-fills-market.service`
+- Bind: `FPL_MARKET_BIND` in `/etc/falcon-fills-store/market.env` (Tailscale address, default not public)
+- Auth: `Authorization: Bearer $FPL_MARKET_TOKEN` (same token the gateway uses). Health `GET /health` needs no token.
+- Routes: `GET /v1/pairs`, `/v1/ticker`, `/v1/candles`, `/v1/trades`
+- Candle times are **observer** arrival, not verified UTC. See the honesty contract above.
