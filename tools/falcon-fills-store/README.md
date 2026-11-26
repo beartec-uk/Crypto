@@ -64,7 +64,7 @@ sudo systemctl start falcon-fills-backup.service
 `serve.py` is a read-only HTTP API used by `fpl-gateway` for `fpl_pairs`, `fpl_ticker`, `fpl_candles` and longer `fpl_fills` history. It reads this SQLite database and does not call the chain.
 
 - Unit: `falcon-fills-market.service`
-- Bind: `FPL_MARKET_BIND` in `/etc/falcon-fills-store/market.env` (Tailscale address, default not public)
+- Bind: `FPL_MARKET_BIND` in `/etc/falcon-fills-store/market.env` (Tailscale address only, not public). On beartec-brain use `100.96.215.37:9478` — port 8787 is already taken by another service. The code default `127.0.0.1:8787` is for local dev only.
 - Auth: `Authorization: Bearer $FPL_MARKET_TOKEN` (same token the gateway uses). Health `GET /health` needs no token.
 - Routes: `GET /v1/pairs`, `/v1/ticker`, `/v1/candles`, `/v1/trades`
 - Candle times are **observer** arrival, not verified UTC. See the honesty contract above.
