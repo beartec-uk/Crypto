@@ -1,13 +1,14 @@
 // Copyright (c) 2025-2026 BEARTEC (Scott Reynolds). All rights reserved.
-import { Helmet } from 'react-helmet-async';
 import { MarketingPageFrame } from '@/components/marketing/MarketingPageFrame';
+import { Seo } from '@/components/marketing/Seo';
 
 export default function CryptoContact() {
   return (
     <MarketingPageFrame>
-      <Helmet>
-        <title>Contact — BearTec</title>
-      </Helmet>
+      <Seo
+        title="Contact — BearTec"
+        description="Contact BearTec by email at beartec@beartec.uk."
+      />
       <h1 className="text-4xl font-semibold tracking-tight">Contact</h1>
       <p className="mt-6 text-zinc-400">
         Email{' '}

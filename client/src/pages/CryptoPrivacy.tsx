@@ -1,11 +1,17 @@
 // Copyright (c) 2026 BEARTEC LTD. All rights reserved.
 import { Shield } from 'lucide-react';
 import { LegalPageLayout, Section, LegalTable, TBC, CONTACT_EMAIL, COMPANY_DETAILS } from '@/components/legal/LegalPageLayout';
+import { Seo } from '@/components/marketing/Seo';
 
 const mail = <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#00c4b4] hover:underline">{CONTACT_EMAIL}</a>;
 
 export default function CryptoPrivacy() {
   return (
+    <>
+    <Seo
+      title="Privacy Policy — BearTec"
+      description="How BearTec collects, uses and shares personal data. BEARTEC LTD is the controller."
+    />
     <LegalPageLayout title="Privacy Policy" icon={<Shield className="w-8 h-8 text-[#00c4b4]" />} lastUpdated="4 November 2026">
       <Section title="1. Who we are">
         <p>BearTec Crypto is run by {COMPANY_DETAILS} ("BEARTEC", "we", "us"). We are the controller of the personal data described in this policy. Contact: {mail}. ICO registration number: <TBC>ICO registration number</TBC>. We have not appointed a data protection officer because the law does not require one for our activities; Scott Reynolds, director, is responsible for data protection.</p>
@@ -100,5 +106,6 @@ export default function CryptoPrivacy() {
         <p>We will post any changes here with a new date, and tell you by email or in the app if a change is significant.</p>
       </Section>
     </LegalPageLayout>
+    </>
   );
 }

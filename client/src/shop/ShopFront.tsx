@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SHOP_CATEGORIES, formatPrice, type ShopCatalogue, type ShopProduct } from '@shared/shop/types';
 import ShopWheel, { type WheelItem } from './ShopWheel';
 import { loadCatalogue, startCheckout } from './api';
+import { mockProducts } from './mockCatalogue';
 import { withCheckoutReturn } from './checkoutReturn';
 import { useBasket } from './useBasket';
 import type { ShopTheme } from './themes';
@@ -80,7 +81,11 @@ function CrossfadeImage({ src, alt, reduced }: { src: string; alt: string; reduc
 export default function ShopFront({ theme }: { theme: ShopTheme }) {
   const reduced = usePrefersReducedMotion();
   const [finePointer] = useState(() => typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: fine)').matches);
-  const [catalogue, setCatalogue] = useState<ShopCatalogue | null>(null);
+  const [catalogue, setCatalogue] = useState<ShopCatalogue | null>(() =>
+    import.meta.env.SSR
+      ? { source: 'mock', collection: theme.collectionHandle, products: mockProducts(theme.id) }
+      : null,
+  );
   const [level, setLevel] = useState<Level>(0);
   const [dir, setDir] = useState<'down' | 'up'>('down');
   const [catIdx, setCatIdx] = useState(0);

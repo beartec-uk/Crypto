@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import ShopFront from '@/shop/ShopFront';
 import { BEARTEC_THEME, SHOP_THEMES, type ShopThemeId } from '@/shop/themes';
 import { SHOP_OG_IMAGE } from '@/components/marketing/shopPromo';
+import { OG_IMAGE, OG_IMAGE_ALT } from '@/seo/publicRoutes';
 
 /**
  * /shop → BearTec theme.
@@ -27,6 +28,8 @@ export default function Shop({ themeId }: { themeId?: ShopThemeId }) {
         <meta property="og:url" content="https://www.beartec.uk/shop" />
         <meta property="og:image" content={SHOP_OG_IMAGE} />
         <meta property="og:image:alt" content="BearTec Chest Logo Tee" />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:image:alt" content={OG_IMAGE_ALT} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={theme.copy.pageTitle} />
         <meta name="twitter:description" content={theme.copy.metaDescription} />
