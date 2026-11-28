@@ -6,6 +6,7 @@ import { TrendingUp, ArrowRight, Sparkles, BarChart2, LogIn } from 'lucide-react
 import { isDevelopment } from '@/hooks/useCryptoAuth';
 import { useEffect, useMemo } from 'react';
 import { useAuth, SignInButton } from '@clerk/clerk-react';
+import { Seo } from '@/components/marketing/Seo';
 
 function DevelopmentLogin() {
   return (
@@ -60,6 +61,7 @@ function ProductionLogin() {
   const [, setLocation] = useLocation();
 
   const returnToUrl = useMemo(() => {
+    if (typeof window === 'undefined') return '/cryptoindicators';
     const params = new URLSearchParams(window.location.search);
     const returnTo = params.get('returnTo');
     return returnTo ? decodeURIComponent(returnTo) : '/cryptoindicators';
@@ -113,9 +115,37 @@ function ProductionLogin() {
   );
 }
 
+function LoginHead() {
+  const [location] = useLocation();
+  const path = (location || '/').split(/[?#]/)[0];
+  const alias = path === '/cryptologin';
+  return (
+    <Seo
+      title={alias ? 'Crypto sign in — BearTec' : 'Sign in — BearTec'}
+      description={
+        alias
+          ? 'Sign in to BearTec Crypto to open your charts and indicators.'
+          : 'Sign in to BearTec to open free crypto charts and indicators.'
+      }
+    />
+  );
+}
+
 export default function CryptoLogin() {
-  if (isDevelopment) {
-    return <DevelopmentLogin />;
+  // Prerender has no ClerkProvider. The prerender build aliases Clerk to a signed-out stub,
+  // and this branch still renders the production card so the HTML matches a signed-out visit.
+  if (import.meta.env.SSR || !isDevelopment) {
+    return (
+      <>
+        <LoginHead />
+        <ProductionLogin />
+      </>
+    );
   }
-  return <ProductionLogin />;
+  return (
+    <>
+      <LoginHead />
+      <DevelopmentLogin />
+    </>
+  );
 }

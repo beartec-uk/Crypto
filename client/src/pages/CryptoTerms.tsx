@@ -2,11 +2,17 @@
 import { FileText } from 'lucide-react';
 import { Link } from 'wouter';
 import { LegalPageLayout, Section, LegalTable, CONTACT_EMAIL, COMPANY_DETAILS } from '@/components/legal/LegalPageLayout';
+import { Seo } from '@/components/marketing/Seo';
 
 const mail = <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#00c4b4] hover:underline">{CONTACT_EMAIL}</a>;
 
 export default function CryptoTerms() {
   return (
+    <>
+    <Seo
+      title="Terms of Service — BearTec"
+      description="Terms for using BearTec Crypto. Charts and indicators are information and education, not financial advice."
+    />
     <LegalPageLayout title="Terms of Service" icon={<FileText className="w-8 h-8 text-[#00c4b4]" />} lastUpdated="4 November 2026">
       <Section title="1. About these terms">
         <p>These terms are a contract between you and {COMPANY_DETAILS} ("BEARTEC", "we", "us"). They apply when you use BearTec Crypto at www.beartec.uk. Please read them, together with our <Link href="/privacy" className="text-[#00c4b4] hover:underline">Privacy Policy</Link>. Contact: {mail}.</p>
@@ -100,5 +106,6 @@ export default function CryptoTerms() {
         <p>If a court finds part of these terms invalid, the rest still applies. We may transfer this contract to another business that takes over BearTec Crypto; we will tell you, and your rights will not be reduced. Nobody else has rights under these terms.</p>
       </Section>
     </LegalPageLayout>
+    </>
   );
 }

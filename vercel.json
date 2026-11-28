@@ -1,7 +1,7 @@
 {
   "version": 2,
   "installCommand": "npm install --include=dev && cd cold-signer && npm install",
-  "buildCommand": "npx vite build && cd cold-signer && npx vite build && cp -r dist ../dist/cold-signer",
+  "buildCommand": "npx vite build && npx vite build --config vite.prerender.config.ts && node scripts/prerender-public.mjs && cd cold-signer && npx vite build && cp -r dist ../dist/cold-signer",
   "outputDirectory": "dist",
   "functions": {
     "api/crypto/order-flow-alerts.ts": {
@@ -73,6 +73,16 @@
       "schedule": "15 0 * * *"
     }
   ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "beartec.uk" }],
+      "destination": "https://www.beartec.uk/:path*",
+      "permanent": true
+    },
+    { "source": "/cryptoprivacy", "destination": "/privacy", "permanent": true },
+    { "source": "/cryptoterms", "destination": "/terms", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/api/tracker/(.*)", "destination": "http://5.78.142.246:3101/api/$1" },
     { "source": "/api/tracker", "destination": "http://5.78.142.246:3101/health" },
@@ -113,9 +123,24 @@
     { "source": "/api/crypto/feedback-board/:id/replies", "destination": "/api/crypto/feedback-board/[id]/replies" },
     { "source": "/api/crypto/feedback-board/:id", "destination": "/api/crypto/feedback-board/[id]" },
     { "source": "/shop", "destination": "/shop.html" },
-    { "source": "/((?!api/|cold-signer/|admin(?:/|$)|dev(?:/|$)|assets/).*)", "destination": "/index.html" }
+    { "source": "/crypto", "destination": "/crypto.html" },
+    { "source": "/pricing", "destination": "/pricing.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/contact", "destination": "/contact.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/cryptologin", "destination": "/cryptologin.html" },
+    { "source": "/((?!api/|cold-signer/|admin(?:/|$)|dev(?:/|$)|assets/|sitemap\\.xml$|robots\\.txt$|.*\\.html$).+)", "destination": "/spa.html" }
   ],
   "headers": [
+    {
+      "source": "/sitemap.xml",
+      "headers": [{ "key": "Content-Type", "value": "application/xml; charset=utf-8" }]
+    },
+    {
+      "source": "/robots.txt",
+      "headers": [{ "key": "Content-Type", "value": "text/plain; charset=utf-8" }]
+    },
     {
       "source": "/assets/(.*)",
       "headers": [

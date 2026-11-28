@@ -5,7 +5,8 @@
   "license": "UNLICENSED",
   "scripts": {
     "dev": "tsx server/index.ts",
-    "build": "tsc && vite build && npm run build:cold && npm run build:qbtc",
+    "build": "tsc && vite build && npm run build:prerender && npm run build:cold && npm run build:qbtc",
+    "build:prerender": "vite build --config vite.prerender.config.ts && node scripts/prerender-public.mjs",
     "analyze": "vite build --mode analyze",
     "preview": "vite preview",
     "start": "node server/index.js",

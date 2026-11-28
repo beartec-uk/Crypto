@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 BEARTEC (Scott Reynolds). All rights reserved.
-import { Helmet } from 'react-helmet-async';
 import { MarketingAuthCtas } from '@/components/marketing/MarketingAuthCtas';
 import { MarketingPageFrame } from '@/components/marketing/MarketingPageFrame';
+import { Seo } from '@/components/marketing/Seo';
 
 const PLANS = [
   { name: 'Free', price: 'Free', detail: 'charts and indicators' },
@@ -13,10 +13,10 @@ const PLANS = [
 export default function CryptoPricing() {
   return (
     <MarketingPageFrame wide>
-      <Helmet>
-        <title>Pricing — BearTec</title>
-        <meta name="description" content="Charts stay free. Pay only for optional AI." />
-      </Helmet>
+      <Seo
+        title="Pricing — BearTec"
+        description="Charts stay free. Pay only for optional AI. Free, Core, Pro and Elite plans."
+      />
       <p className="text-xs uppercase tracking-[0.28em] text-[#00c4b4]">Optional</p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tight">Pay only for AI.</h1>
       <div className="mt-12 overflow-hidden rounded-xl border border-white/10">

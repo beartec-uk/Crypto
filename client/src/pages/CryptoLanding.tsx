@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 BEARTEC (Scott Reynolds). All rights reserved.
 import { useEffect, useRef } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
+import { Seo } from '@/components/marketing/Seo';
 import videoFile from '@assets/grok_video_2025-11-13-19-48-28_1763063433278.mp4';
 import { MarketingAuthCtas } from '@/components/marketing/MarketingAuthCtas';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
@@ -110,6 +110,8 @@ function CyanHeroCanvas() {
 
 export default function CryptoLanding() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [location] = useLocation();
+  const onCryptoAlias = (location || '/').split(/[?#]/)[0] === '/crypto';
 
   useEffect(() => {
     const video = videoRef.current;
@@ -134,18 +136,18 @@ export default function CryptoLanding() {
 
   return (
     <div className="bg-[#0e0e0e] text-white" data-testid="crypto-landing-container">
-      <Helmet>
-        <title>BearTec — Charts that explain themselves.</title>
-        <meta
-          name="description"
-          content="BearTec: charts that explain themselves. Free indicators. Optional AI."
-        />
-        <meta property="og:title" content="BearTec — Charts that explain themselves." />
-        <meta property="og:description" content="Free indicators. Optional AI." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.beartec.uk" />
-        <meta property="og:site_name" content="BearTec" />
-      </Helmet>
+      <Seo
+        title={
+          onCryptoAlias
+            ? 'BearTec Crypto — Charts that explain themselves.'
+            : 'BearTec — Charts that explain themselves.'
+        }
+        description={
+          onCryptoAlias
+            ? 'BearTec Crypto: charts that explain themselves. Free indicators. Optional AI.'
+            : 'BearTec: charts that explain themselves. Free indicators. Optional AI.'
+        }
+      />
 
       <a href="#free" className="skip-link">
         Skip to content
